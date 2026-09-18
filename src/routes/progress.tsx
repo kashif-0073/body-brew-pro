@@ -343,9 +343,13 @@ function ProgressPage() {
         <Panel className="col-span-12 xl:col-span-5">
           <h2 className="font-display font-semibold text-lg mb-4">Energy balance</h2>
           <div className="grid grid-cols-2 gap-2">
-            <StatTile label="Intake (7d)" value={balance.intake.toLocaleString()} unit="kcal" />
             <StatTile
-              label="Burn (7d)"
+              label={`Intake (${balance.loggedDays}d logged)`}
+              value={balance.intake.toLocaleString()}
+              unit="kcal"
+            />
+            <StatTile
+              label="Burn (same days)"
               value={balance.expenditure.toLocaleString()}
               unit="kcal"
               tone="muted"
