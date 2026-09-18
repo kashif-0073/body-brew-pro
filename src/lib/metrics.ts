@@ -1,4 +1,4 @@
-import type { Activity, Goal, Profile, WorkoutSession } from "./types";
+import type { Activity, Goal, Meal, Profile, WorkoutSession } from "./types";
 
 /** Epley one-rep-max estimate. */
 export function estimate1RM(weightKg: number, reps: number): number {
@@ -129,6 +129,70 @@ export function streak(sessions: WorkoutSession[]): number {
     else if (i > 0) break;
   }
   return n;
+}
+
+export interface DayNutrition {
+  date: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+/** Intake totals per day for the last `days` days, oldest first. */
+export function dailyNutrition(meals: Meal[], days: number): DayNutrition[] {
+  const out: DayNutrition[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(Date.now() - i * 86_400_000).toISOString().slice(0, 10);
+    const dayMeals = meals.filter((m) => m.date === date);
+    out.push({
+      date,
+      kcal: dayMeals.reduce((t, m) => t + m.kcal, 0),
+      protein: dayMeals.reduce((t, m) => t + m.protein, 0),
+      carbs: dayMeals.reduce((t, m) => t + m.carbs, 0),
+      fat: dayMeals.reduce((t, m) => t + m.fat, 0),
+    });
+  }
+  return out;
+}
+
+/** Average intake across days that actually have logged food. */
+export function averageIntake(days: DayNutrition[]): DayNutrition & { loggedDays: number } {
+  const logged = days.filter((d) => d.kcal > 0);
+  const n = logged.length || 1;
+  const avg = (k: keyof Omit<DayNutrition, "date">) =>
+    Math.round(logged.reduce((t, d) => t + d[k], 0) / n);
+  return {
+    date: "average",
+    kcal: avg("kcal"),
+    protein: avg("protein"),
+    carbs: avg("carbs"),
+    fat: avg("fat"),
+    loggedDays: logged.length,
+  };
+}
+
+/** Percentage of a target hit (capped at 200% so a blowout stays readable). */
+export function adherence(actual: number, target: number): number {
+  if (target <= 0) return 0;
+  return Math.min(200, Math.round((actual / target) * 100));
+}
+
+/**
+ * Energy balance over a window: intake minus (TDEE + training expenditure estimate).
+ * Training burn uses ~0.05 kcal per kg lifted, a common tonnage-to-energy approximation.
+ */
+export function energyBalance(
+  p: Profile,
+  meals: Meal[],
+  sessions: WorkoutSession[],
+  days: number,
+): { intake: number; expenditure: number; balance: number; perDay: number } {
+  const intake = dailyNutrition(meals, days).reduce((t, d) => t + d.kcal, 0);
+  const training = volumeInWindow(sessions, days) * 0.05;
+  const expenditure = Math.round(tdee(p) * days + training);
+  const balance = Math.round(intake - expenditure);
+  return { intake, expenditure, balance, perDay: Math.round(balance / days) };
 }
 
 export const GOAL_METRIC_FOCUS: Record<Goal, string> = {
