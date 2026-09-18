@@ -96,6 +96,10 @@ export function volumeInWindow(sessions: WorkoutSession[], days: number): number
  * 0.8–1.3 is the recognised "sweet spot" for progressing without spiking injury risk.
  */
 export function acwr(sessions: WorkoutSession[]): number {
+  // Needs a real chronic base — fewer than 4 sessions in the 28-day window
+  // makes the ratio meaningless (a first session always reads as a "spike").
+  const recent = sessions.filter((s) => daysAgo(s.date) < 28);
+  if (recent.length < 4) return 0;
   const acute = volumeInWindow(sessions, 7);
   const chronic = volumeInWindow(sessions, 28) / 4;
   if (chronic <= 0) return 0;
