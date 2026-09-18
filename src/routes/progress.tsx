@@ -81,6 +81,16 @@ function ProgressPage() {
   const best1RM = Math.max(0, ...sessions.map(sessionBest1RM));
   const firstBody = body[0];
   const lastBody = body[body.length - 1];
+  const targets = macroTargets(profile);
+  const avgIntake = averageIntake(nutritionDays);
+  const balance = energyBalance(profile, meals, sessions, 7);
+  const onTrack =
+    avgIntake.loggedDays > 0 &&
+    (profile.goal === "fatloss"
+      ? balance.perDay < -150
+      : profile.goal === "muscle" || profile.goal === "strength"
+        ? balance.perDay > 100
+        : Math.abs(balance.perDay) < 300);
 
   return (
     <div className="space-y-5">
