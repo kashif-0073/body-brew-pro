@@ -1,4 +1,4 @@
-import type { Activity, Goal, Profile, WorkoutSession } from "./types";
+import type { Activity, Goal, Meal, Profile, WorkoutSession } from "./types";
 
 /** Epley one-rep-max estimate. */
 export function estimate1RM(weightKg: number, reps: number): number {
@@ -96,6 +96,10 @@ export function volumeInWindow(sessions: WorkoutSession[], days: number): number
  * 0.8–1.3 is the recognised "sweet spot" for progressing without spiking injury risk.
  */
 export function acwr(sessions: WorkoutSession[]): number {
+  // Needs a real chronic base — fewer than 4 sessions in the 28-day window
+  // makes the ratio meaningless (a first session always reads as a "spike").
+  const recent = sessions.filter((s) => daysAgo(s.date) < 28);
+  if (recent.length < 4) return 0;
   const acute = volumeInWindow(sessions, 7);
   const chronic = volumeInWindow(sessions, 28) / 4;
   if (chronic <= 0) return 0;
@@ -129,6 +133,83 @@ export function streak(sessions: WorkoutSession[]): number {
     else if (i > 0) break;
   }
   return n;
+}
+
+export interface DayNutrition {
+  date: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+/** Intake totals per day for the last `days` days, oldest first. */
+export function dailyNutrition(meals: Meal[], days: number): DayNutrition[] {
+  const out: DayNutrition[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(Date.now() - i * 86_400_000).toISOString().slice(0, 10);
+    const dayMeals = meals.filter((m) => m.date === date);
+    out.push({
+      date,
+      kcal: dayMeals.reduce((t, m) => t + m.kcal, 0),
+      protein: dayMeals.reduce((t, m) => t + m.protein, 0),
+      carbs: dayMeals.reduce((t, m) => t + m.carbs, 0),
+      fat: dayMeals.reduce((t, m) => t + m.fat, 0),
+    });
+  }
+  return out;
+}
+
+/** Average intake across days that actually have logged food. */
+export function averageIntake(days: DayNutrition[]): DayNutrition & { loggedDays: number } {
+  const logged = days.filter((d) => d.kcal > 0);
+  const n = logged.length || 1;
+  const avg = (k: keyof Omit<DayNutrition, "date">) =>
+    Math.round(logged.reduce((t, d) => t + d[k], 0) / n);
+  return {
+    date: "average",
+    kcal: avg("kcal"),
+    protein: avg("protein"),
+    carbs: avg("carbs"),
+    fat: avg("fat"),
+    loggedDays: logged.length,
+  };
+}
+
+/** Percentage of a target hit (capped at 200% so a blowout stays readable). */
+export function adherence(actual: number, target: number): number {
+  if (target <= 0) return 0;
+  return Math.min(200, Math.round((actual / target) * 100));
+}
+
+/**
+ * Energy balance over a window: intake minus (TDEE + training expenditure estimate).
+ * Training burn uses ~0.05 kcal per kg lifted, a common tonnage-to-energy approximation.
+ */
+export function energyBalance(
+  p: Profile,
+  meals: Meal[],
+  sessions: WorkoutSession[],
+  days: number,
+): { intake: number; expenditure: number; balance: number; perDay: number; loggedDays: number } {
+  const byDay = dailyNutrition(meals, days);
+  const logged = byDay.filter((d) => d.kcal > 0);
+  // Only compare days the user actually logged food, otherwise empty days
+  // read as an enormous fake deficit.
+  const loggedDates = new Set(logged.map((d) => d.date));
+  const intake = logged.reduce((t, d) => t + d.kcal, 0);
+  const training = sessions
+    .filter((s) => loggedDates.has(s.date))
+    .reduce((t, s) => t + sessionVolume(s) * 0.05, 0);
+  const expenditure = Math.round(tdee(p) * logged.length + training);
+  const balance = Math.round(intake - expenditure);
+  return {
+    intake,
+    expenditure,
+    balance,
+    perDay: logged.length ? Math.round(balance / logged.length) : 0,
+    loggedDays: logged.length,
+  };
 }
 
 export const GOAL_METRIC_FOCUS: Record<Goal, string> = {

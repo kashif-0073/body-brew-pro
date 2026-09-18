@@ -6,9 +6,14 @@ import { useStore, today } from "@/lib/store";
 import {
   acwr,
   acwrVerdict,
+  adherence,
+  averageIntake,
+  dailyNutrition,
+  energyBalance,
   ffmi,
   GOAL_METRIC_FOCUS,
   leanMass,
+  macroTargets,
   sessionBest1RM,
   sessionVolume,
   streak,
@@ -39,9 +44,12 @@ export const Route = createFileRoute("/progress")({
 
 function ProgressPage() {
   const { state, hydrated, addBodyEntry } = useStore();
-  const { profile, sessions, body } = state;
+  const { profile, sessions, body, meals } = state;
   const [weight, setWeight] = useState<number | "">("");
   const [fat, setFat] = useState<number | "">("");
+  const [openSession, setOpenSession] = useState<string | null>(null);
+
+  const nutritionDays = useMemo(() => dailyNutrition(meals, 7), [meals]);
 
   const weekVolumes = useMemo(() => {
     const buckets = Array.from({ length: 8 }, () => 0);
@@ -73,6 +81,16 @@ function ProgressPage() {
   const best1RM = Math.max(0, ...sessions.map(sessionBest1RM));
   const firstBody = body[0];
   const lastBody = body[body.length - 1];
+  const targets = macroTargets(profile);
+  const avgIntake = averageIntake(nutritionDays);
+  const balance = energyBalance(profile, meals, sessions, 7);
+  const onTrack =
+    avgIntake.loggedDays > 0 &&
+    (profile.goal === "fatloss"
+      ? balance.perDay < -150
+      : profile.goal === "muscle" || profile.goal === "strength"
+        ? balance.perDay > 100
+        : Math.abs(balance.perDay) < 300);
 
   return (
     <div className="space-y-5">
@@ -204,30 +222,167 @@ function ProgressPage() {
         </Panel>
 
         <Panel className="col-span-12 xl:col-span-7">
-          <h2 className="font-display font-semibold text-lg mb-4">Session history</h2>
-          <div className="space-y-2 max-h-96 overflow-auto pr-1">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display font-semibold text-lg">Session history</h2>
+            <span className="text-[11px] text-muted-foreground">
+              {sessions.length} logged · tap to expand
+            </span>
+          </div>
+          <div className="space-y-2 max-h-[28rem] overflow-auto pr-1">
             {sessions.length ? (
-              sessions.map((s) => (
-                <Tile key={s.id} className="flex items-center justify-between gap-3 p-3">
-                  <div className="min-w-0">
-                    <p className="font-semibold truncate">{s.title}</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {s.date} · {s.focus}
-                    </p>
-                  </div>
-                  <div className="text-right whitespace-nowrap text-sm">
-                    <p className="font-semibold">
-                      {Math.round(sessionVolume(s)).toLocaleString()}
-                      <span className="text-muted-foreground text-xs"> kg</span>
-                    </p>
-                    <p className="text-[11px] text-cyan">1RM {sessionBest1RM(s)} kg</p>
-                  </div>
-                </Tile>
-              ))
+              sessions.map((s) => {
+                const open = openSession === s.id;
+                const doneSets = s.exercises.reduce(
+                  (t, e) => t + e.sets.filter((x) => x.done).length,
+                  0,
+                );
+                return (
+                  <Tile key={s.id} className="p-3">
+                    <button
+                      type="button"
+                      onClick={() => setOpenSession(open ? null : s.id)}
+                      className="w-full flex items-center justify-between gap-3 text-left"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-semibold truncate">{s.title}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {s.date} · {s.focus} · {doneSets} sets · {s.durationMin} min
+                        </p>
+                      </div>
+                      <div className="text-right whitespace-nowrap text-sm">
+                        <p className="font-semibold">
+                          {Math.round(sessionVolume(s)).toLocaleString()}
+                          <span className="text-muted-foreground text-xs"> kg</span>
+                        </p>
+                        <p className="text-[11px] text-cyan">1RM {sessionBest1RM(s)} kg</p>
+                      </div>
+                    </button>
+                    {open && (
+                      <div className="mt-3 space-y-2 border-t border-border pt-3">
+                        {s.exercises.map((e) => (
+                          <div key={e.name} className="text-sm">
+                            <div className="flex items-baseline justify-between gap-3">
+                              <span className="font-medium truncate">{e.name}</span>
+                              <span className="text-[11px] text-muted-foreground shrink-0">
+                                {e.muscle}
+                              </span>
+                            </div>
+                            <div className="mt-1 flex flex-wrap gap-1.5">
+                              {e.sets.map((set, i) => (
+                                <span
+                                  key={i}
+                                  className={`rounded-md px-2 py-0.5 text-[11px] ${
+                                    set.done
+                                      ? "bg-softer text-foreground"
+                                      : "bg-softer/50 text-muted-foreground line-through"
+                                  }`}
+                                >
+                                  {set.weightKg > 0 ? `${set.weightKg} kg × ` : ""}
+                                  {set.reps}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </Tile>
+                );
+              })
             ) : (
-              <p className="text-sm text-muted-foreground">No sessions yet.</p>
+              <p className="text-sm text-muted-foreground">
+                No sessions yet. Start one from the Log tab and it will appear here with every set.
+              </p>
             )}
           </div>
+        </Panel>
+      </div>
+
+      <div className="grid grid-cols-12 gap-5">
+        <Panel className="col-span-12 xl:col-span-7">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <Eyebrow>Nutrition</Eyebrow>
+              <h2 className="font-display font-semibold text-lg">Intake vs requirement</h2>
+            </div>
+            <span className="text-[11px] text-muted-foreground">Last 7 days</span>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatTile
+              label="Avg calories"
+              value={avgIntake.kcal.toLocaleString()}
+              unit={`/ ${targets.kcal.toLocaleString()}`}
+              delta={`${adherence(avgIntake.kcal, targets.kcal)}%`}
+              tone="cyan"
+            />
+            <StatTile
+              label="Avg protein"
+              value={avgIntake.protein}
+              unit={`/ ${targets.protein} g`}
+              delta={`${adherence(avgIntake.protein, targets.protein)}%`}
+              tone="lime"
+            />
+            <StatTile label="Avg carbs" value={avgIntake.carbs} unit={`/ ${targets.carbs} g`} />
+            <StatTile label="Avg fat" value={avgIntake.fat} unit={`/ ${targets.fat} g`} />
+          </div>
+          <div className="mt-5">
+            <BarChart values={nutritionDays.map((d) => d.kcal)} className="h-24" />
+            <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
+              {nutritionDays.map((d) => (
+                <span key={d.date}>{d.date.slice(5)}</span>
+              ))}
+            </div>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-3">
+            Daily calories logged on {avgIntake.loggedDays} of 7 days · requirement{" "}
+            {targets.kcal.toLocaleString()} kcal and {targets.protein} g protein for{" "}
+            {GOAL_LABEL[profile.goal].toLowerCase()}.
+          </p>
+        </Panel>
+
+        <Panel className="col-span-12 xl:col-span-5">
+          <h2 className="font-display font-semibold text-lg mb-4">Energy balance</h2>
+          <div className="grid grid-cols-2 gap-2">
+            <StatTile
+              label={`Intake (${balance.loggedDays}d logged)`}
+              value={balance.intake.toLocaleString()}
+              unit="kcal"
+            />
+            <StatTile
+              label="Burn (same days)"
+              value={balance.expenditure.toLocaleString()}
+              unit="kcal"
+              tone="muted"
+            />
+            <StatTile
+              label="Net balance"
+              value={`${balance.balance > 0 ? "+" : ""}${balance.balance.toLocaleString()}`}
+              unit="kcal"
+              tone={onTrack ? "lime" : "rose"}
+            />
+            <StatTile
+              label="Per day"
+              value={`${balance.perDay > 0 ? "+" : ""}${balance.perDay.toLocaleString()}`}
+              unit="kcal"
+              tone={onTrack ? "lime" : "rose"}
+            />
+          </div>
+          <p className="text-sm text-muted-foreground mt-4">
+            {avgIntake.loggedDays === 0
+              ? "Log meals for a few days and this will show whether your intake matches your goal."
+              : onTrack
+                ? `On track — your balance supports ${GOAL_LABEL[profile.goal].toLowerCase()}. Expect roughly ${Math.abs(
+                    +((balance.perDay * 7) / 7700).toFixed(2),
+                  )} kg change per week at this rate.`
+                : profile.goal === "fatloss"
+                  ? "You're eating at or above maintenance — trim around 300–500 kcal a day to keep fat loss moving."
+                  : profile.goal === "muscle" || profile.goal === "strength"
+                    ? "You're below the surplus needed to build — add roughly 250–400 kcal a day, mostly carbs."
+                    : "Intake is drifting from maintenance; keep it steady to support cardiovascular training."}
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-3">
+            Burn = Mifflin-St Jeor BMR × activity factor, plus an estimate from logged tonnage.
+          </p>
         </Panel>
       </div>
     </div>
