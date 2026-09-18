@@ -44,9 +44,12 @@ export const Route = createFileRoute("/progress")({
 
 function ProgressPage() {
   const { state, hydrated, addBodyEntry } = useStore();
-  const { profile, sessions, body } = state;
+  const { profile, sessions, body, meals } = state;
   const [weight, setWeight] = useState<number | "">("");
   const [fat, setFat] = useState<number | "">("");
+  const [openSession, setOpenSession] = useState<string | null>(null);
+
+  const nutritionDays = useMemo(() => dailyNutrition(meals, 7), [meals]);
 
   const weekVolumes = useMemo(() => {
     const buckets = Array.from({ length: 8 }, () => 0);
