@@ -191,12 +191,25 @@ export function energyBalance(
   meals: Meal[],
   sessions: WorkoutSession[],
   days: number,
-): { intake: number; expenditure: number; balance: number; perDay: number } {
-  const intake = dailyNutrition(meals, days).reduce((t, d) => t + d.kcal, 0);
-  const training = volumeInWindow(sessions, days) * 0.05;
-  const expenditure = Math.round(tdee(p) * days + training);
+): { intake: number; expenditure: number; balance: number; perDay: number; loggedDays: number } {
+  const byDay = dailyNutrition(meals, days);
+  const logged = byDay.filter((d) => d.kcal > 0);
+  // Only compare days the user actually logged food, otherwise empty days
+  // read as an enormous fake deficit.
+  const loggedDates = new Set(logged.map((d) => d.date));
+  const intake = logged.reduce((t, d) => t + d.kcal, 0);
+  const training = sessions
+    .filter((s) => loggedDates.has(s.date))
+    .reduce((t, s) => t + sessionVolume(s) * 0.05, 0);
+  const expenditure = Math.round(tdee(p) * logged.length + training);
   const balance = Math.round(intake - expenditure);
-  return { intake, expenditure, balance, perDay: Math.round(balance / days) };
+  return {
+    intake,
+    expenditure,
+    balance,
+    perDay: logged.length ? Math.round(balance / logged.length) : 0,
+    loggedDays: logged.length,
+  };
 }
 
 export const GOAL_METRIC_FOCUS: Record<Goal, string> = {
