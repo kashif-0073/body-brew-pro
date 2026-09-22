@@ -225,30 +225,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [patchActive],
   );
 
-  const [finished, setFinished] = useState<WorkoutSession | null>(null);
-
   const finishSession = useCallback((): WorkoutSession | null => {
-    let saved: WorkoutSession | null = null;
-    setState((s) => {
-      if (!s.active) return s;
-      const hasWork = s.active.exercises.some((e) => e.sets.some((x) => x.done));
-      if (!hasWork) return { ...s, active: null };
-      const done: WorkoutSession = {
-        ...s.active,
-        completed: true,
-        // Stamp the day it was finished, not the day it was opened.
-        date: today(),
-        elapsedMin: s.active.startedAt
-          ? Math.max(1, Math.round((Date.now() - s.active.startedAt) / 60_000))
-          : s.active.durationMin,
-      };
-      saved = done;
-      return { ...s, active: null, sessions: [done, ...s.sessions] };
-    });
-    setFinished(saved);
-    return saved;
-  }, []);
-  void finished;
+    const current = state.active;
+    if (!current) return null;
+    const hasWork = current.exercises.some((e) => e.sets.some((x) => x.done));
+    if (!hasWork) {
+      setState((s) => ({ ...s, active: null }));
+      return null;
+    }
+    const done: WorkoutSession = {
+      ...current,
+      completed: true,
+      // Stamp the day it was finished, not the day it was opened.
+      date: today(),
+      elapsedMin: current.startedAt
+        ? Math.max(1, Math.round((Date.now() - current.startedAt) / 60_000))
+        : current.durationMin,
+    };
+    setState((s) => ({ ...s, active: null, sessions: [done, ...s.sessions] }));
+    return done;
+  }, [state.active]);
 
   const discardSession = useCallback(() => setState((s) => ({ ...s, active: null })), []);
 
