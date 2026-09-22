@@ -1,4 +1,4 @@
-import type { Activity, Goal, Meal, Profile, WorkoutSession } from "./types";
+import type { Activity, BodyEntry, Goal, Meal, Profile, WorkoutSession } from "./types";
 
 /** Epley one-rep-max estimate. */
 export function estimate1RM(weightKg: number, reps: number): number {
@@ -218,3 +218,98 @@ export const GOAL_METRIC_FOCUS: Record<Goal, string> = {
   cardio: "VO₂max & zone-2 minutes",
   strength: "Estimated 1RM & intensity",
 };
+
+export interface PersonalBest {
+  name: string;
+  muscle: string;
+  weightKg: number;
+  reps: number;
+  e1rm: number;
+  date: string;
+}
+
+/** Best estimated 1RM ever logged, per exercise, newest-best first. */
+export function personalBests(sessions: WorkoutSession[]): PersonalBest[] {
+  const best = new Map<string, PersonalBest>();
+  for (const s of sessions)
+    for (const e of s.exercises)
+      for (const set of e.sets) {
+        if (!set.done || set.weightKg <= 0 || set.reps <= 0) continue;
+        const e1rm = estimate1RM(set.weightKg, set.reps);
+        const prev = best.get(e.name);
+        if (!prev || e1rm > prev.e1rm)
+          best.set(e.name, {
+            name: e.name,
+            muscle: e.muscle,
+            weightKg: set.weightKg,
+            reps: set.reps,
+            e1rm: Math.round(e1rm),
+            date: s.date,
+          });
+      }
+  return [...best.values()].sort((a, b) => b.e1rm - a.e1rm);
+}
+
+export interface LastPerformance {
+  date: string;
+  topWeightKg: number;
+  topReps: number;
+  allSetsHit: boolean;
+  sets: { weightKg: number; reps: number }[];
+}
+
+/** The most recent completed work for one exercise. */
+export function lastPerformance(
+  sessions: WorkoutSession[],
+  name: string,
+): LastPerformance | null {
+  const ordered = [...sessions].sort((a, b) => b.date.localeCompare(a.date));
+  for (const s of ordered) {
+    const ex = s.exercises.find((e) => e.name === name);
+    if (!ex) continue;
+    const done = ex.sets.filter((x) => x.done);
+    if (!done.length) continue;
+    const top = done.reduce((a, b) => (estimate1RM(b.weightKg, b.reps) > estimate1RM(a.weightKg, a.reps) ? b : a));
+    return {
+      date: s.date,
+      topWeightKg: top.weightKg,
+      topReps: top.reps,
+      allSetsHit: done.length === ex.sets.length,
+      sets: done.map((x) => ({ weightKg: x.weightKg, reps: x.reps })),
+    };
+  }
+  return null;
+}
+
+/**
+ * Double-progression: if every prescribed set was completed last time at or above
+ * the target reps, nudge the load; otherwise repeat it.
+ */
+export function progressedLoad(
+  planned: { weightKg: number; reps: number },
+  last: LastPerformance | null,
+): { weightKg: number; reason: string } {
+  if (!last) return { weightKg: planned.weightKg, reason: "starting load" };
+  const base = last.topWeightKg;
+  if (base <= 0) return { weightKg: planned.weightKg, reason: "bodyweight" };
+  if (last.allSetsHit && last.topReps >= planned.reps) {
+    const step = base >= 60 ? 5 : base >= 20 ? 2.5 : 1;
+    return { weightKg: +(base + step).toFixed(1), reason: `+${step} kg on last session` };
+  }
+  return { weightKg: base, reason: "repeat last load" };
+}
+
+/** Daily water target (ml): 35 ml/kg plus 500 ml on training days. */
+export function waterTarget(weightKg: number, training: boolean): number {
+  return Math.round(weightKg * 35 + (training ? 500 : 0));
+}
+
+/** Weight trend (kg/week) from the body log over the last `days`. */
+export function weightTrend(body: BodyEntry[], days = 28): number | null {
+  const recent = body.filter((b) => daysAgo(b.date) < days).sort((a, b) => a.date.localeCompare(b.date));
+  if (recent.length < 2) return null;
+  const first = recent[0]!;
+  const last = recent[recent.length - 1]!;
+  const span = Math.max(1, daysAgo(first.date) - daysAgo(last.date));
+  return +(((last.weightKg - first.weightKg) / span) * 7).toFixed(2);
+}
