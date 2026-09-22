@@ -42,12 +42,15 @@ export interface LoggedSet {
   weightKg: number;
   reps: number;
   done: boolean;
+  /** Rate of perceived exertion, 6–10. */
+  rpe?: number;
 }
 
 export interface LoggedExercise {
   name: string;
   muscle: string;
   sets: LoggedSet[];
+  note?: string;
 }
 
 export interface WorkoutSession {
@@ -58,6 +61,10 @@ export interface WorkoutSession {
   durationMin: number;
   exercises: LoggedExercise[];
   completed: boolean;
+  /** Epoch ms when the session was started, for real elapsed time. */
+  startedAt?: number;
+  elapsedMin?: number;
+  notes?: string;
 }
 
 export interface Meal {
@@ -77,6 +84,21 @@ export interface BodyEntry {
   bodyFatPct: number;
 }
 
+/** A saved food the user can re-log in one tap. */
+export interface FoodFavorite {
+  id: string;
+  name: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+export interface WaterEntry {
+  date: string;
+  ml: number;
+}
+
 export interface AppState {
   profile: Profile | null;
   plan: PlannedDay[];
@@ -84,6 +106,8 @@ export interface AppState {
   active: WorkoutSession | null;
   meals: Meal[];
   body: BodyEntry[];
+  favorites: FoodFavorite[];
+  water: WaterEntry[];
 }
 
 export const GOAL_LABEL: Record<Goal, string> = {
