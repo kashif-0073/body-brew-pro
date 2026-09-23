@@ -40,7 +40,8 @@ const DEFAULT: Profile = {
 };
 
 function ProfilePage() {
-  const { state, hydrated, saveProfile, regeneratePlan, reset } = useStore();
+  const { state, hydrated, saveProfile, regeneratePlan, reset, exportState, importState } =
+    useStore();
   const navigate = useNavigate();
   const [form, setForm] = useState<Profile>(DEFAULT);
 
@@ -246,11 +247,47 @@ function ProfilePage() {
         </Panel>
 
         <Panel>
-          <Eyebrow>Privacy</Eyebrow>
-          <p className="text-sm text-muted-foreground">
-            Everything you enter stays in this browser. No account needed — clear it any time with
-            the button on the left.
+          <Eyebrow>Backup</Eyebrow>
+          <h2 className="font-display font-bold text-xl mb-2">Move your data</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Everything stays in this browser. Save a backup file to keep it safe or move it to
+            another device.
           </p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => {
+                const blob = new Blob([exportState()], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `pulseforge-backup-${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                toast.success("Backup downloaded.");
+              }}
+            >
+              Download backup
+            </Button>
+            <label className="inline-flex items-center justify-center gap-2 rounded-xl font-semibold text-sm px-4 py-2.5 glass-tile hover:bg-softer cursor-pointer">
+              Restore backup
+              <input
+                type="file"
+                accept="application/json"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (!file) return;
+                  try {
+                    importState(await file.text());
+                    toast.success("Backup restored.");
+                  } catch {
+                    toast.error("That file isn't a PulseForge backup.");
+                  }
+                }}
+              />
+            </label>
+          </div>
         </Panel>
       </div>
     </div>

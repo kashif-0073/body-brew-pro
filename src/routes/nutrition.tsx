@@ -2,10 +2,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Loader2, Sparkles, Trash2 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  Droplets,
+  Loader2,
+  Sparkles,
+  Star,
+  Trash2,
+} from "lucide-react";
 import { Button, ChoiceRow, Eyebrow, Field, Panel, Ring, StatTile } from "@/components/ui-kit";
 import { useStore, today } from "@/lib/store";
-import { macroTargets } from "@/lib/metrics";
+import { macroTargets, waterTarget } from "@/lib/metrics";
 import { estimateMeal } from "@/lib/ai.functions";
 import type { Meal } from "@/lib/types";
 
@@ -15,12 +24,12 @@ export const Route = createFileRoute("/nutrition")({
       { title: "Calorie & Protein Tracker — PulseForge" },
       {
         name: "description",
-        content: "Track calories, protein, carbs and fat with manual entry or AI meal estimates.",
+        content: "Track calories, protein, carbs, fat and hydration with AI or manual entry.",
       },
       { property: "og:title", content: "Calorie & Protein Tracker — PulseForge" },
       {
         property: "og:description",
-        content: "Track calories, protein, carbs and fat with manual entry or AI meal estimates.",
+        content: "Track calories, protein, carbs, fat and hydration with AI or manual entry.",
       },
     ],
   }),
@@ -29,16 +38,29 @@ export const Route = createFileRoute("/nutrition")({
 
 type Slot = Meal["slot"];
 
+const shift = (date: string, days: number) =>
+  new Date(new Date(date + "T00:00:00").getTime() + days * 86_400_000).toISOString().slice(0, 10);
+
 function NutritionPage() {
-  const { state, hydrated, addMeal, removeMeal } = useStore();
+  const {
+    state,
+    hydrated,
+    addMeal,
+    removeMeal,
+    copyMeals,
+    addFavorite,
+    removeFavorite,
+    addWater,
+  } = useStore();
   const estimate = useServerFn(estimateMeal);
+  const [date, setDate] = useState(today());
   const [slot, setSlot] = useState<Slot>("breakfast");
   const [manual, setManual] = useState({ name: "", kcal: 0, protein: 0, carbs: 0, fat: 0 });
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
 
   if (!hydrated) return <Panel className="h-64 animate-pulse" />;
-  const { profile, meals } = state;
+  const { profile, meals, favorites, water, sessions } = state;
 
   if (!profile) {
     return (
@@ -52,8 +74,8 @@ function NutritionPage() {
   }
 
   const targets = macroTargets(profile);
-  const todays = meals.filter((m) => m.date === today());
-  const totals = todays.reduce(
+  const dayMeals = meals.filter((m) => m.date === date);
+  const totals = dayMeals.reduce(
     (t, m) => ({
       kcal: t.kcal + m.kcal,
       protein: t.protein + m.protein,
@@ -62,13 +84,21 @@ function NutritionPage() {
     }),
     { kcal: 0, protein: 0, carbs: 0, fat: 0 },
   );
+  const trainedToday = sessions.some((s) => s.date === date);
+  const waterMl = water.find((w) => w.date === date)?.ml ?? 0;
+  const waterGoal = waterTarget(profile.weightKg, trainedToday);
+  const isToday = date === today();
 
   const saveManual = () => {
     if (!manual.name.trim()) {
       toast.error("Give the meal a name.");
       return;
     }
-    addMeal({ ...manual, slot });
+    if (manual.kcal <= 0 && manual.protein <= 0 && manual.carbs <= 0 && manual.fat <= 0) {
+      toast.error("Add at least calories or a macro.");
+      return;
+    }
+    addMeal({ ...manual, slot, date });
     setManual({ name: "", kcal: 0, protein: 0, carbs: 0, fat: 0 });
     toast.success("Meal logged.");
   };
@@ -81,7 +111,7 @@ function NutritionPage() {
     setLoading(true);
     try {
       const out = await estimate({ data: { description } });
-      addMeal({ ...out, slot });
+      addMeal({ ...out, slot, date });
       setDescription("");
       toast.success(`${out.name} · ${out.kcal} kcal · ${out.protein} g protein`);
     } catch (err) {
@@ -93,32 +123,117 @@ function NutritionPage() {
 
   return (
     <div className="grid grid-cols-12 gap-5">
-      <Panel className="col-span-12 lg:col-span-4" float>
-        <Eyebrow>Today</Eyebrow>
-        <h1 className="font-display font-bold text-2xl mb-4">Macro budget</h1>
-        <div className="flex items-center gap-4 mb-5">
-          <Ring value={totals.kcal} max={targets.kcal} label={totals.kcal.toLocaleString()} size={96} />
-          <div className="space-y-2 text-sm w-full">
-            <Line label="Calories" value={totals.kcal} target={targets.kcal} unit="" color="bg-cyan" />
-            <Line label="Protein" value={totals.protein} target={targets.protein} unit="g" color="bg-lime" />
-            <Line label="Carbs" value={totals.carbs} target={targets.carbs} unit="g" color="bg-violet" />
-            <Line label="Fat" value={totals.fat} target={targets.fat} unit="g" color="bg-rose" />
+      <div className="col-span-12 lg:col-span-4 space-y-5">
+        <Panel float>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <Eyebrow>{isToday ? "Today" : date}</Eyebrow>
+              <h1 className="font-display font-bold text-2xl">Macro budget</h1>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                aria-label="Previous day"
+                onClick={() => setDate((d) => shift(d, -1))}
+                className="glass-tile rounded-lg p-1.5 text-muted-foreground hover:text-foreground"
+              >
+                <ChevronLeft className="size-4" />
+              </button>
+              <button
+                aria-label="Next day"
+                disabled={isToday}
+                onClick={() => setDate((d) => shift(d, 1))}
+                className="glass-tile rounded-lg p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+              >
+                <ChevronRight className="size-4" />
+              </button>
+            </div>
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <StatTile
-            label="Remaining"
-            value={Math.max(0, targets.kcal - totals.kcal).toLocaleString()}
-            unit="kcal"
-          />
-          <StatTile
-            label="Protein left"
-            value={Math.max(0, targets.protein - totals.protein)}
-            unit="g"
-            tone="cyan"
-          />
-        </div>
-      </Panel>
+          <div className="flex items-center gap-4 mb-5">
+            <Ring value={totals.kcal} max={targets.kcal} label={totals.kcal.toLocaleString()} size={96} />
+            <div className="space-y-2 text-sm w-full">
+              <Line label="Calories" value={totals.kcal} target={targets.kcal} unit="" color="bg-cyan" />
+              <Line label="Protein" value={totals.protein} target={targets.protein} unit="g" color="bg-lime" />
+              <Line label="Carbs" value={totals.carbs} target={targets.carbs} unit="g" color="bg-violet" />
+              <Line label="Fat" value={totals.fat} target={targets.fat} unit="g" color="bg-rose" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <StatTile
+              label={totals.kcal > targets.kcal ? "Over budget" : "Remaining"}
+              value={Math.abs(targets.kcal - totals.kcal).toLocaleString()}
+              unit="kcal"
+              tone={totals.kcal > targets.kcal ? "rose" : "lime"}
+              delta={totals.kcal > targets.kcal ? "above target" : "left today"}
+            />
+            <StatTile
+              label="Protein left"
+              value={Math.max(0, targets.protein - totals.protein)}
+              unit="g"
+              tone="cyan"
+            />
+          </div>
+        </Panel>
+
+        <Panel>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Droplets className="size-4 text-cyan" />
+              <h2 className="font-display font-semibold text-lg">Hydration</h2>
+            </div>
+            <span className="text-sm text-muted-foreground tabular-nums">
+              {(waterMl / 1000).toFixed(2)} / {(waterGoal / 1000).toFixed(1)} L
+            </span>
+          </div>
+          <div className="h-2 rounded-full bg-softer overflow-hidden mb-3">
+            <div
+              className="h-full bg-cyan rounded-full transition-all"
+              style={{ width: `${Math.min(100, (waterMl / waterGoal) * 100)}%` }}
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[250, 500, 750].map((ml) => (
+              <Button key={ml} size="sm" onClick={() => addWater(ml, date)}>
+                +{ml} ml
+              </Button>
+            ))}
+            <Button size="sm" variant="ghost" onClick={() => addWater(-250, date)}>
+              −250 ml
+            </Button>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-3">
+            Target is 35 ml per kg of bodyweight{trainedToday ? ", plus 500 ml for training today" : ""}.
+          </p>
+        </Panel>
+
+        {favorites.length ? (
+          <Panel>
+            <h2 className="font-display font-semibold text-lg mb-3">Quick add</h2>
+            <div className="flex flex-wrap gap-2">
+              {favorites.map((f) => (
+                <span key={f.id} className="glass-tile rounded-xl flex items-center overflow-hidden">
+                  <button
+                    onClick={() => {
+                      addMeal({ ...f, slot, date });
+                      toast.success(`${f.name} logged.`);
+                    }}
+                    className="px-3 py-2 text-xs font-semibold hover:bg-softer"
+                  >
+                    {f.name}
+                    <span className="text-muted-foreground"> · {f.kcal} kcal</span>
+                  </button>
+                  <button
+                    aria-label={`Remove ${f.name} from quick add`}
+                    onClick={() => removeFavorite(f.id)}
+                    className="px-2 py-2 text-muted-foreground hover:text-rose"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          </Panel>
+        ) : null}
+      </div>
 
       <div className="col-span-12 lg:col-span-8 space-y-5">
         <Panel>
@@ -128,6 +243,9 @@ function NutritionPage() {
             <input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !loading) void runAi();
+              }}
               placeholder="e.g. two eggs, 80 g oats with milk and a banana"
               className="flex-1 glass-tile rounded-xl px-4 py-3 text-sm outline-none focus:border-cyan/50"
             />
@@ -167,29 +285,35 @@ function NutritionPage() {
               label="Calories"
               type="number"
               suffix="kcal"
-              value={manual.kcal}
-              onChange={(e) => setManual({ ...manual, kcal: Number(e.target.value) })}
+              value={manual.kcal === 0 ? "" : manual.kcal}
+              placeholder="0"
+              onChange={(e) => setManual({ ...manual, kcal: Math.max(0, Number(e.target.value) || 0) })}
             />
             <Field
               label="Protein"
               type="number"
               suffix="g"
-              value={manual.protein}
-              onChange={(e) => setManual({ ...manual, protein: Number(e.target.value) })}
+              value={manual.protein === 0 ? "" : manual.protein}
+              placeholder="0"
+              onChange={(e) =>
+                setManual({ ...manual, protein: Math.max(0, Number(e.target.value) || 0) })
+              }
             />
             <Field
               label="Carbs"
               type="number"
               suffix="g"
-              value={manual.carbs}
-              onChange={(e) => setManual({ ...manual, carbs: Number(e.target.value) })}
+              value={manual.carbs === 0 ? "" : manual.carbs}
+              placeholder="0"
+              onChange={(e) => setManual({ ...manual, carbs: Math.max(0, Number(e.target.value) || 0) })}
             />
             <Field
               label="Fat"
               type="number"
               suffix="g"
-              value={manual.fat}
-              onChange={(e) => setManual({ ...manual, fat: Number(e.target.value) })}
+              value={manual.fat === 0 ? "" : manual.fat}
+              placeholder="0"
+              onChange={(e) => setManual({ ...manual, fat: Math.max(0, Number(e.target.value) || 0) })}
             />
             <div className="flex items-end">
               <Button variant="primary" className="w-full" onClick={saveManual}>
@@ -200,21 +324,53 @@ function NutritionPage() {
         </Panel>
 
         <Panel>
-          <h2 className="font-display font-semibold text-lg mb-4">Today's meals</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <h2 className="font-display font-semibold text-lg">
+              {isToday ? "Today's meals" : `Meals on ${date}`}
+            </h2>
+            <Button
+              size="sm"
+              onClick={() => {
+                const n = copyMeals(shift(date, -1), date);
+                if (n) toast.success(`Copied ${n} meals from the previous day.`);
+                else toast.error("Nothing logged the day before.");
+              }}
+            >
+              <Copy className="size-3.5" /> Copy previous day
+            </Button>
+          </div>
           <div className="space-y-2">
-            {todays.map((m) => (
+            {dayMeals.map((m) => (
               <div
                 key={m.id}
                 className="flex items-center justify-between glass-tile rounded-xl px-3 py-2.5 text-sm gap-3"
               >
                 <div className="min-w-0">
                   <p className="truncate font-medium">{m.name}</p>
-                  <p className="text-[11px] text-muted-foreground capitalize">{m.slot}</p>
+                  <p className="text-[11px] text-muted-foreground capitalize">
+                    {m.slot} · {m.carbs} g C · {m.fat} g F
+                  </p>
                 </div>
                 <div className="flex items-center gap-3 whitespace-nowrap">
                   <span className="text-muted-foreground">
                     {m.kcal} kcal · <span className="text-lime">{m.protein} g P</span>
                   </span>
+                  <button
+                    onClick={() => {
+                      addFavorite({
+                        name: m.name,
+                        kcal: m.kcal,
+                        protein: m.protein,
+                        carbs: m.carbs,
+                        fat: m.fat,
+                      });
+                      toast.success(`${m.name} saved to quick add.`);
+                    }}
+                    aria-label={`Save ${m.name} to quick add`}
+                    className="text-muted-foreground hover:text-lime"
+                  >
+                    <Star className="size-4" />
+                  </button>
                   <button
                     onClick={() => removeMeal(m.id)}
                     aria-label={`Remove ${m.name}`}
@@ -225,8 +381,8 @@ function NutritionPage() {
                 </div>
               </div>
             ))}
-            {!todays.length ? (
-              <p className="text-sm text-muted-foreground">No meals logged today yet.</p>
+            {!dayMeals.length ? (
+              <p className="text-sm text-muted-foreground">Nothing logged for this day yet.</p>
             ) : null}
           </div>
         </Panel>
