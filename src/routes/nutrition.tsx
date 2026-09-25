@@ -124,7 +124,7 @@ function NutritionPage() {
   return (
     <div className="grid grid-cols-12 gap-5">
       <div className="col-span-12 lg:col-span-4 space-y-5">
-        <Panel float>
+        <Panel>
           <div className="flex items-center justify-between mb-4">
             <div>
               <Eyebrow>{isToday ? "Today" : date}</Eyebrow>
