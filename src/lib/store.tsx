@@ -39,7 +39,7 @@ export interface SetPatch {
   weightKg?: number;
   reps?: number;
   done?: boolean;
-  rpe?: number;
+  rpe?: number | undefined;
 }
 
 interface StoreValue {
