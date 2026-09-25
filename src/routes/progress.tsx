@@ -401,6 +401,43 @@ function ProgressPage() {
           </p>
         </Panel>
       </div>
+
+      <Panel>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <div>
+            <Eyebrow>Records</Eyebrow>
+            <h2 className="font-display font-semibold text-lg">Personal bests</h2>
+          </div>
+          <span className="text-[11px] text-muted-foreground">
+            {trend !== null
+              ? `Bodyweight trend ${trend > 0 ? "+" : ""}${trend} kg / week`
+              : "Log your weight twice to see a trend"}
+          </span>
+        </div>
+        {bests.length ? (
+          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-2">
+            {bests.slice(0, 12).map((b) => (
+              <Tile key={b.name} className="p-3">
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="text-sm font-semibold truncate">{b.name}</p>
+                  <p className="text-[11px] text-muted-foreground shrink-0">{b.date}</p>
+                </div>
+                <p className="font-display font-bold text-xl">
+                  {b.weightKg > 0 ? `${b.weightKg} kg × ${b.reps}` : `${b.reps} reps`}
+                </p>
+                <p className="text-[11px] text-cyan">
+                  {b.muscle}
+                  {b.weightKg > 0 ? ` · est. 1RM ${b.e1rm} kg` : ""}
+                </p>
+              </Tile>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Complete a few sets and your best lift for each exercise shows up here.
+          </p>
+        )}
+      </Panel>
     </div>
   );
 }
