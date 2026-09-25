@@ -246,7 +246,8 @@ function ProgressPage() {
                       <div className="min-w-0">
                         <p className="font-semibold truncate">{s.title}</p>
                         <p className="text-[11px] text-muted-foreground">
-                          {s.date} · {s.focus} · {doneSets} sets · {s.durationMin} min
+                          {s.date} · {s.focus} · {doneSets} sets ·{" "}
+                          {s.elapsedMin ?? s.durationMin} min
                         </p>
                       </div>
                       <div className="text-right whitespace-nowrap text-sm">
@@ -284,6 +285,19 @@ function ProgressPage() {
                             </div>
                           </div>
                         ))}
+                        {s.notes ? (
+                          <p className="text-[11px] text-muted-foreground italic">“{s.notes}”</p>
+                        ) : null}
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          onClick={() => {
+                            deleteSession(s.id);
+                            toast.success("Session deleted.");
+                          }}
+                        >
+                          Delete session
+                        </Button>
                       </div>
                     )}
                   </Tile>
