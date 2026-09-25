@@ -20,6 +20,8 @@ import {
   vo2max,
   volumeInWindow,
   weeklySetsByMuscle,
+  personalBests,
+  weightTrend,
 } from "@/lib/metrics";
 import { GOAL_LABEL } from "@/lib/types";
 
@@ -43,7 +45,7 @@ export const Route = createFileRoute("/progress")({
 });
 
 function ProgressPage() {
-  const { state, hydrated, addBodyEntry } = useStore();
+  const { state, hydrated, addBodyEntry, deleteSession } = useStore();
   const { profile, sessions, body, meals } = state;
   const [weight, setWeight] = useState<number | "">("");
   const [fat, setFat] = useState<number | "">("");
