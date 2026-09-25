@@ -1,8 +1,10 @@
 # PulseForge roadmap
 
-- [x] Design system, profile, planner, workout logger, nutrition, progress
-- [x] AI meal estimation + AI plan generation (verified in browser)
-- [x] Progress page: nutrition adherence vs targets, 7-day intake trend, energy balance, expandable session detail
-- [x] End-to-end readiness pass (typecheck, build OK, browser walkthrough)
+All done.
 
-Notes: data is stored on the device (localStorage). Accounts/cloud sync would need Lovable Cloud.
+- [x] Profile, goals, metrics (BMR/TDEE/FFMI/VO2max)
+- [x] Rule-based + AI workout plans
+- [x] Session logger: live timer, rest timer, RPE, notes, add/remove exercises, auto load progression, PR badges
+- [x] Nutrition: manual + AI meals, day navigation, favorites, copy previous day, hydration
+- [x] Progress: tonnage, ACWR, weekly sets, nutrition vs target, energy balance, session history + delete, personal bests, weight trend
+- [x] Backup: download / restore JSON

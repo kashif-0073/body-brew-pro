@@ -20,6 +20,8 @@ import {
   vo2max,
   volumeInWindow,
   weeklySetsByMuscle,
+  personalBests,
+  weightTrend,
 } from "@/lib/metrics";
 import { GOAL_LABEL } from "@/lib/types";
 
@@ -43,13 +45,15 @@ export const Route = createFileRoute("/progress")({
 });
 
 function ProgressPage() {
-  const { state, hydrated, addBodyEntry } = useStore();
+  const { state, hydrated, addBodyEntry, deleteSession } = useStore();
   const { profile, sessions, body, meals } = state;
   const [weight, setWeight] = useState<number | "">("");
   const [fat, setFat] = useState<number | "">("");
   const [openSession, setOpenSession] = useState<string | null>(null);
 
   const nutritionDays = useMemo(() => dailyNutrition(meals, 7), [meals]);
+  const bests = useMemo(() => personalBests(sessions), [sessions]);
+  const trend = useMemo(() => weightTrend(body), [body]);
 
   const weekVolumes = useMemo(() => {
     const buckets = Array.from({ length: 8 }, () => 0);
@@ -246,7 +250,8 @@ function ProgressPage() {
                       <div className="min-w-0">
                         <p className="font-semibold truncate">{s.title}</p>
                         <p className="text-[11px] text-muted-foreground">
-                          {s.date} · {s.focus} · {doneSets} sets · {s.durationMin} min
+                          {s.date} · {s.focus} · {doneSets} sets ·{" "}
+                          {s.elapsedMin ?? s.durationMin} min
                         </p>
                       </div>
                       <div className="text-right whitespace-nowrap text-sm">
@@ -284,6 +289,19 @@ function ProgressPage() {
                             </div>
                           </div>
                         ))}
+                        {s.notes ? (
+                          <p className="text-[11px] text-muted-foreground italic">“{s.notes}”</p>
+                        ) : null}
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          onClick={() => {
+                            deleteSession(s.id);
+                            toast.success("Session deleted.");
+                          }}
+                        >
+                          Delete session
+                        </Button>
                       </div>
                     )}
                   </Tile>
@@ -385,6 +403,43 @@ function ProgressPage() {
           </p>
         </Panel>
       </div>
+
+      <Panel>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <div>
+            <Eyebrow>Records</Eyebrow>
+            <h2 className="font-display font-semibold text-lg">Personal bests</h2>
+          </div>
+          <span className="text-[11px] text-muted-foreground">
+            {trend !== null
+              ? `Bodyweight trend ${trend > 0 ? "+" : ""}${trend} kg / week`
+              : "Log your weight twice to see a trend"}
+          </span>
+        </div>
+        {bests.length ? (
+          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-2">
+            {bests.slice(0, 12).map((b) => (
+              <Tile key={b.name} className="p-3">
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="text-sm font-semibold truncate">{b.name}</p>
+                  <p className="text-[11px] text-muted-foreground shrink-0">{b.date}</p>
+                </div>
+                <p className="font-display font-bold text-xl">
+                  {b.weightKg > 0 ? `${b.weightKg} kg × ${b.reps}` : `${b.reps} reps`}
+                </p>
+                <p className="text-[11px] text-cyan">
+                  {b.muscle}
+                  {b.weightKg > 0 ? ` · est. 1RM ${b.e1rm} kg` : ""}
+                </p>
+              </Tile>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Complete a few sets and your best lift for each exercise shows up here.
+          </p>
+        )}
+      </Panel>
     </div>
   );
 }

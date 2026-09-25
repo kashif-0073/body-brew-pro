@@ -43,14 +43,14 @@ export interface LoggedSet {
   reps: number;
   done: boolean;
   /** Rate of perceived exertion, 6–10. */
-  rpe?: number;
+  rpe?: number | undefined;
 }
 
 export interface LoggedExercise {
   name: string;
   muscle: string;
   sets: LoggedSet[];
-  note?: string;
+  note?: string | undefined;
 }
 
 export interface WorkoutSession {
