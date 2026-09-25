@@ -52,6 +52,8 @@ function ProgressPage() {
   const [openSession, setOpenSession] = useState<string | null>(null);
 
   const nutritionDays = useMemo(() => dailyNutrition(meals, 7), [meals]);
+  const bests = useMemo(() => personalBests(sessions), [sessions]);
+  const trend = useMemo(() => weightTrend(body), [body]);
 
   const weekVolumes = useMemo(() => {
     const buckets = Array.from({ length: 8 }, () => 0);
