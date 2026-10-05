@@ -2,8 +2,8 @@
 
 ## In progress
 
-- [ ] Add exercise form-cue dialogs to workout exercises and planned exercises
-- [ ] Add a dedicated searchable, filterable exercise library
+- [x] Add exercise form-cue dialogs to workout exercises and planned exercises
+- [x] Add a dedicated searchable, filterable exercise library
 
 ## Completed
 

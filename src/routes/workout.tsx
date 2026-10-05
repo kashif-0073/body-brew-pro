@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Check, Loader2, Plus, Sparkles, Timer, Trash2, Trophy, X } from "lucide-react";
+import { Check, CircleHelp, Loader2, Plus, Sparkles, Timer, Trash2, Trophy, X } from "lucide-react";
+import { ExerciseDetailsDialog } from "@/components/ExerciseDetailsDialog";
 import { Button, Eyebrow, Panel, StatTile, Tile } from "@/components/ui-kit";
 import { useStore } from "@/lib/store";
 import {
@@ -11,7 +12,7 @@ import {
   personalBests,
   sessionVolume,
 } from "@/lib/metrics";
-import { EXERCISES } from "@/lib/exercises";
+import { EXERCISES, type ExerciseDef } from "@/lib/exercises";
 import { generateAiPlan } from "@/lib/ai.functions";
 import { GOAL_LABEL, LEVEL_LABEL } from "@/lib/types";
 
@@ -78,6 +79,7 @@ function WorkoutPage() {
   const [aiRequest, setAiRequest] = useState("");
   const [loadingAi, setLoadingAi] = useState(false);
   const [picker, setPicker] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState<ExerciseDef | null>(null);
   const aiPlan = useServerFn(generateAiPlan);
   const startedAt = state.active?.startedAt;
 
@@ -288,6 +290,15 @@ function WorkoutPage() {
                   <Button size="sm" onClick={() => addSet(exIdx)}>
                     <Plus className="size-3.5" /> Set
                   </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label={`View form cues for ${ex.name}`}
+                    title="View form cues"
+                    onClick={() => setSelectedExercise(EXERCISES.find((item) => item.name === ex.name) ?? null)}
+                  >
+                    <CircleHelp className="size-4" />
+                  </Button>
                   <button
                     onClick={() => removeExercise(exIdx)}
                     aria-label={`Remove ${ex.name}`}
@@ -472,7 +483,19 @@ function WorkoutPage() {
                   const last = lastPerformance(sessions, ex.name);
                   return (
                     <div key={ex.name} className="flex items-center justify-between text-sm gap-2">
-                      <span className="truncate">{ex.name}</span>
+                      <span className="flex min-w-0 items-center gap-1.5">
+                        <span className="truncate">{ex.name}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          aria-label={`View form cues for ${ex.name}`}
+                          title="View form cues"
+                          onClick={() => setSelectedExercise(EXERCISES.find((item) => item.name === ex.name) ?? null)}
+                          className="size-7 shrink-0 px-0 py-0"
+                        >
+                          <CircleHelp className="size-3.5" />
+                        </Button>
+                      </span>
                       <span className="text-muted-foreground whitespace-nowrap">
                         {ex.sets} × {ex.reps}
                         {last && last.topWeightKg > 0
@@ -520,6 +543,13 @@ function WorkoutPage() {
         Loads start from what you actually lifted last time: hit every set at the target reps and the
         next session steps the weight up automatically.
       </Tile>
+      <ExerciseDetailsDialog
+        exercise={selectedExercise}
+        open={selectedExercise !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedExercise(null);
+        }}
+      />
     </div>
   );
 }
