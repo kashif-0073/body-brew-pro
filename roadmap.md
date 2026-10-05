@@ -1,6 +1,11 @@
 # PulseForge roadmap
 
-All done.
+## In progress
+
+- [ ] Add exercise form-cue dialogs to workout exercises and planned exercises
+- [ ] Add a dedicated searchable, filterable exercise library
+
+## Completed
 
 - [x] Profile, goals, metrics (BMR/TDEE/FFMI/VO2max)
 - [x] Rule-based + AI workout plans
