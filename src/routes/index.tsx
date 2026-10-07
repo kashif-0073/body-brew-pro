@@ -29,6 +29,8 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Your training day, live progress metrics and macro totals in one dashboard.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Dashboard,

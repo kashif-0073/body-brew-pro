@@ -31,6 +31,8 @@ export const Route = createFileRoute("/nutrition")({
         property: "og:description",
         content: "Track calories, protein, carbs, fat and hydration with AI or manual entry.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: NutritionPage,
