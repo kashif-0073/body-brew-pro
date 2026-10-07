@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Eyebrow } from "@/components/ui-kit";
+import { MuscleMap } from "@/components/MuscleMap";
 import { cuesFor, regionOf, type ExerciseDef } from "@/lib/exercises";
 import { EQUIPMENT_LABEL, LEVEL_LABEL } from "@/lib/types";
 
@@ -35,6 +36,8 @@ export function ExerciseDetailsDialog({
             Follow each cue in order, using a controlled load and pain-free range of motion.
           </DialogDescription>
         </DialogHeader>
+
+        <MuscleMap muscle={exercise.muscle} />
 
         <div className="grid grid-cols-3 gap-2" aria-label="Exercise details">
           <div className="glass-tile rounded-xl p-3">
