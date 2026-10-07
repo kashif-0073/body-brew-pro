@@ -39,6 +39,8 @@ export const Route = createFileRoute("/progress")({
         property: "og:description",
         content: "Tonnage, estimated 1RM, weekly hard sets, VO₂ max and body composition trends.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ProgressPage,

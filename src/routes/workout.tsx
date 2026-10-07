@@ -29,6 +29,8 @@ export const Route = createFileRoute("/workout")({
         property: "og:description",
         content: "Log every set, weight and rep with a built-in rest timer and live tonnage.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: WorkoutPage,
@@ -447,6 +449,13 @@ function WorkoutPage() {
             className="mt-4 w-full glass-tile rounded-xl px-3 py-2.5 text-sm outline-none focus:border-cyan/50 resize-none"
           />
         </Panel>
+        <ExerciseDetailsDialog
+          exercise={selectedExercise}
+          open={selectedExercise !== null}
+          onOpenChange={(open) => {
+            if (!open) setSelectedExercise(null);
+          }}
+        />
       </div>
     );
   }
