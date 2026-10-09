@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Eyebrow } from "@/components/ui-kit";
-import { MuscleMap } from "@/components/MuscleMap";
+import { ExerciseVisual } from "@/components/ExerciseVisual";
 import { cuesFor, regionOf, type ExerciseDef } from "@/lib/exercises";
 import { EQUIPMENT_LABEL, LEVEL_LABEL } from "@/lib/types";
 
@@ -28,7 +28,7 @@ export function ExerciseDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="glass-panel max-h-[85vh] overflow-y-auto border-glass-line sm:max-w-xl">
+      <DialogContent className="glass-panel max-h-[85vh] overflow-y-auto border-glass-line sm:max-w-2xl">
         <DialogHeader className="pr-8 text-left">
           <Eyebrow>{regionOf(exercise.muscle)} technique</Eyebrow>
           <DialogTitle className="font-display text-2xl font-bold">{exercise.name}</DialogTitle>
@@ -37,7 +37,7 @@ export function ExerciseDetailsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <MuscleMap muscle={exercise.muscle} />
+        <ExerciseVisual name={exercise.name} muscle={exercise.muscle} />
 
         <div className="grid grid-cols-3 gap-2" aria-label="Exercise details">
           <div className="glass-tile rounded-xl p-3">

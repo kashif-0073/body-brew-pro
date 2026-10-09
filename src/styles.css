@@ -43,6 +43,8 @@
   --color-rose: var(--rose);
   --color-brand: var(--brand);
   --color-glass: var(--glass);
+  --color-plate: var(--plate);
+  --color-plate-foreground: var(--plate-foreground);
   --color-glass-line: var(--glass-line);
   --color-soft: var(--soft);
   --color-softer: var(--softer);
@@ -82,6 +84,8 @@
   --brand: oklch(0.55 0.19 275);
 
   --glass: oklch(1 0 0 / 70%);
+  --plate: oklch(0.995 0 0);
+  --plate-foreground: oklch(0.25 0.02 265);
   --glass-line: oklch(0.2 0.03 265 / 10%);
   --soft: oklch(0.2 0.03 265 / 5%);
   --softer: oklch(0.2 0.03 265 / 8%);
@@ -116,6 +120,8 @@
   --brand: oklch(0.6 0.19 277);
 
   --glass: oklch(1 0 0 / 4%);
+  --plate: oklch(0.97 0.004 265);
+  --plate-foreground: oklch(0.25 0.02 265);
   --glass-line: oklch(1 0 0 / 10%);
   --soft: oklch(1 0 0 / 3%);
   --softer: oklch(1 0 0 / 8%);
@@ -193,4 +199,25 @@
   h3 {
     font-family: var(--font-display-family);
   }
+}
+
+@keyframes demo-phase-b {
+  0%, 38% { opacity: 0; }
+  50%, 88% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes demo-phase-a {
+  0%, 38% { opacity: 1; }
+  50%, 88% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes muscle-pulse {
+  0%, 100% { transform: scale(1); filter: saturate(1); }
+  50% { transform: scale(1.025); filter: saturate(1.35); }
+}
+@utility demo-a { animation: demo-phase-a 3.2s ease-in-out infinite; }
+@utility demo-b { animation: demo-phase-b 3.2s ease-in-out infinite; }
+@utility muscle-pulse { animation: muscle-pulse 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .demo-a, .demo-b, .muscle-pulse { animation: none; }
 }
