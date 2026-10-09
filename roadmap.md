@@ -14,3 +14,10 @@
 - [x] Realistic muscle pictures + animated form demos in exercise details
 - [x] Browse-by-muscle picture grid in the library
 - [ ] Step 3: weekly muscle recovery heatmap on Progress (awaiting go-ahead)
+
+## Exercise demo corrections
+- [ ] Rowing: real contracted barbell row frame + rowing machine demo
+- [ ] Chest: incline dumbbell press + machine chest press demos
+- [ ] Shoulders: dumbbell shoulder press + lateral raise demos
+- [ ] Legs: leg press machine demo
+- [ ] Arms: cable triceps pushdown demo
