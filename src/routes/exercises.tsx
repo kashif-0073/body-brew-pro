@@ -6,6 +6,7 @@ import { Button, Eyebrow, Panel } from "@/components/ui-kit";
 import { EXERCISES, REGIONS, regionOf, type ExerciseDef, type Region } from "@/lib/exercises";
 import { EQUIPMENT_LABEL, LEVEL_LABEL } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { MUSCLE_TILES, muscleImage } from "@/lib/visuals";
 
 export const Route = createFileRoute("/exercises")({
   head: () => ({
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/exercises")({
 function ExercisesPage() {
   const [query, setQuery] = useState("");
   const [region, setRegion] = useState<Region | "All">("All");
+  const [muscle, setMuscle] = useState<string | null>(null);
   const [selected, setSelected] = useState<ExerciseDef | null>(null);
 
   const exercises = useMemo(() => {
@@ -41,9 +43,10 @@ function ExercisesPage() {
         exercise.name.toLowerCase().includes(normalized) ||
         exercise.muscle.toLowerCase().includes(normalized) ||
         EQUIPMENT_LABEL[exercise.equipment].toLowerCase().includes(normalized);
-      return matchesRegion && matchesQuery;
+      const matchesMuscle = !muscle || exercise.muscle === muscle;
+      return matchesRegion && matchesQuery && matchesMuscle;
     });
-  }, [query, region]);
+  }, [query, region, muscle]);
 
   return (
     <div className="space-y-5">
@@ -93,6 +96,43 @@ function ExercisesPage() {
         </div>
       </div>
 
+      <section aria-label="Browse by muscle">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="font-display text-base font-semibold">Browse by muscle</h2>
+          {muscle ? (
+            <Button variant="ghost" size="sm" onClick={() => setMuscle(null)}>
+              Show all
+            </Button>
+          ) : null}
+        </div>
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7">
+          {MUSCLE_TILES.map((tile) => {
+            const active = muscle === tile.muscle;
+            return (
+              <button
+                key={tile.muscle}
+                onClick={() => setMuscle(active ? null : tile.muscle)}
+                aria-pressed={active}
+                className={cn(
+                  "group overflow-hidden rounded-2xl bg-plate text-plate-foreground ring-2 transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-ring",
+                  active ? "ring-cyan" : "ring-transparent",
+                )}
+              >
+                <img
+                  src={muscleImage(tile.muscle)}
+                  alt=""
+                  width={816}
+                  height={816}
+                  loading="lazy"
+                  className="aspect-square w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                />
+                <span className="block px-1 pb-2 text-xs font-semibold">{tile.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       {exercises.length ? (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {exercises.map((exercise) => (
@@ -130,6 +170,7 @@ function ExercisesPage() {
             onClick={() => {
               setQuery("");
               setRegion("All");
+              setMuscle(null);
             }}
           >
             Reset filters
