@@ -28,7 +28,7 @@ export function ExerciseVisual({ name, muscle }: { name: string; muscle: string 
           </div>
         )}
       </figure>
-      <figure className="overflow-hidden rounded-2xl bg-plate">
+      <figure className="flex flex-col justify-center overflow-hidden rounded-2xl bg-plate">
         <img src={muscleImage(muscle)} alt={`${muscle} highlighted`} width={816} height={816} loading="lazy" className="aspect-square w-full object-contain" />
         <figcaption className="px-3 pb-3 text-center text-xs font-semibold text-plate-foreground">
           Target: {muscle}
