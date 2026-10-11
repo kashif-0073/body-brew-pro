@@ -16,8 +16,8 @@
 - [ ] Step 3: weekly muscle recovery heatmap on Progress (awaiting go-ahead)
 
 ## Exercise demo corrections
-- [ ] Rowing: real contracted barbell row frame + rowing machine demo
-- [ ] Chest: incline dumbbell press + machine chest press demos
-- [ ] Shoulders: dumbbell shoulder press + lateral raise demos
-- [ ] Legs: leg press machine demo
-- [ ] Arms: cable triceps pushdown demo
+- [x] Rowing: real contracted barbell row frame + rowing machine demo
+- [x] Chest: incline dumbbell press + machine chest press demos
+- [x] Shoulders: dumbbell shoulder press + lateral raise demos
+- [x] Legs: leg press machine demo
+- [x] Arms: cable triceps pushdown demo

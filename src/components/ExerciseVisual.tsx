@@ -5,6 +5,15 @@ import { demoFor, muscleImage } from "@/lib/visuals";
 export function ExerciseVisual({ name, muscle }: { name: string; muscle: string }) {
   const demo = demoFor(name);
 
+  if (!demo) {
+    return (
+      <figure className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl bg-plate">
+        <img src={muscleImage(muscle)} alt={`${muscle} muscles worked`} width={816} height={816} className="muscle-pulse aspect-square w-full object-contain" />
+        <figcaption className="px-3 pb-3 text-center text-xs font-semibold text-plate-foreground">Target: {muscle}</figcaption>
+      </figure>
+    );
+  }
+
   return (
     <div className="grid gap-3 sm:grid-cols-[1.4fr_1fr]">
       <figure className="relative overflow-hidden rounded-2xl bg-plate">
