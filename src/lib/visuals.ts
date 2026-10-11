@@ -25,6 +25,20 @@ import pullA from "@/assets/moves/pull-a.jpg";
 import pullB from "@/assets/moves/pull-b.jpg";
 import curlA from "@/assets/moves/curl-a.jpg";
 import curlB from "@/assets/moves/curl-b.jpg";
+import inclineA from "@/assets/moves/incline-a.jpg";
+import inclineB from "@/assets/moves/incline-b.jpg";
+import machineA from "@/assets/moves/machine-a.jpg";
+import machineB from "@/assets/moves/machine-b.jpg";
+import dbPressA from "@/assets/moves/dbpress-a.jpg";
+import dbPressB from "@/assets/moves/dbpress-b.jpg";
+import lateralA from "@/assets/moves/lateral-a.jpg";
+import lateralB from "@/assets/moves/lateral-b.jpg";
+import legPressA from "@/assets/moves/legpress-a.jpg";
+import legPressB from "@/assets/moves/legpress-b.jpg";
+import pushdownA from "@/assets/moves/pushdown-a.jpg";
+import pushdownB from "@/assets/moves/pushdown-b.jpg";
+import ergA from "@/assets/moves/erg-a.jpg";
+import ergB from "@/assets/moves/erg-b.jpg";
 
 /** Anatomical highlight image per catalog muscle. */
 export const MUSCLE_IMAGE: Record<string, string> = {
@@ -59,29 +73,33 @@ const OVERHEAD: MovementDemo = { start: overheadA, end: overheadB, startLabel: "
 const ROW: MovementDemo = { start: rowA, end: rowB, startLabel: "Arms long", endLabel: "Pull to ribs" };
 const PULL: MovementDemo = { start: pullA, end: pullB, startLabel: "Dead hang", endLabel: "Chin over bar" };
 const CURL: MovementDemo = { start: curlA, end: curlB, startLabel: "Arms straight", endLabel: "Curl & squeeze" };
+const INCLINE: MovementDemo = { start: inclineA, end: inclineB, startLabel: "Stretch at chest", endLabel: "Press up & in" };
+const MACHINE_PRESS: MovementDemo = { start: machineA, end: machineB, startLabel: "Handles at chest", endLabel: "Press forward" };
+const DB_PRESS: MovementDemo = { start: dbPressA, end: dbPressB, startLabel: "Ear height", endLabel: "Press overhead" };
+const LATERAL: MovementDemo = { start: lateralA, end: lateralB, startLabel: "Arms at sides", endLabel: "Raise to shoulder" };
+const LEG_PRESS: MovementDemo = { start: legPressA, end: legPressB, startLabel: "Knees to chest", endLabel: "Push to soft lock" };
+const PUSHDOWN: MovementDemo = { start: pushdownA, end: pushdownB, startLabel: "Elbows at 90°", endLabel: "Lock arms down" };
+const ERG: MovementDemo = { start: ergA, end: ergB, startLabel: "Catch", endLabel: "Drive & finish" };
 
+/** Only exercises whose demo matches the real equipment and movement. */
 const DEMOS: Record<string, MovementDemo> = {
   "Barbell Bench Press": PRESS,
-  "Incline Dumbbell Press": PRESS,
-  "Machine Chest Press": PRESS,
   "Close-Grip Bench Press": PRESS,
+  "Incline Dumbbell Press": INCLINE,
+  "Machine Chest Press": MACHINE_PRESS,
   "Overhead Press": OVERHEAD,
-  "Dumbbell Shoulder Press": OVERHEAD,
+  "Dumbbell Shoulder Press": DB_PRESS,
+  "Lateral Raise": LATERAL,
+  "Cable Triceps Pushdown": PUSHDOWN,
   "Barbell Row": ROW,
-  "Seated Cable Row": ROW,
-  "Dumbbell Row": ROW,
-  "Inverted Row": ROW,
   "Pull-Up": PULL,
   "Weighted Pull-Up": PULL,
-  "Lat Pulldown": PULL,
   "Barbell Curl": CURL,
-  "Dumbbell Hammer Curl": CURL,
   "Barbell Back Squat": SQUAT,
-  "Goblet Squat": SQUAT,
-  "Air Squat": SQUAT,
-  "Leg Press": SQUAT,
+  "Leg Press": LEG_PRESS,
   "Romanian Deadlift": HINGE,
   "Conventional Deadlift": HINGE,
+  "Rowing Intervals": ERG,
 };
 
 export const demoFor = (name: string): MovementDemo | null => DEMOS[name] ?? null;
