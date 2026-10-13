@@ -23,5 +23,5 @@
 - [x] Arms: cable triceps pushdown demo
 
 ## Current
-- [ ] Fix leg press demo frames
-- [ ] General bug check
+- [x] Fix leg press demo frames
+- [x] General bug check
