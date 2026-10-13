@@ -92,7 +92,7 @@ const mealSchema = {
 } as const;
 
 export const estimateMeal = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => MealInput.parse(input))
+  .validator((input: unknown) => MealInput.parse(input))
   .handler(async ({ data }) => {
     const out = (await callGateway(
       data.description,
@@ -162,7 +162,7 @@ const planSchema = {
 } as const;
 
 export const generateAiPlan = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => PlanInput.parse(input))
+  .validator((input: unknown) => PlanInput.parse(input))
   .handler(async ({ data }) => {
     const out = (await callGateway(
       `Athlete: ${data.level} level, goal ${data.goal}, ${data.daysPerWeek} training days per week, ` +

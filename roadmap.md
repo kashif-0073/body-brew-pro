@@ -21,3 +21,7 @@
 - [x] Shoulders: dumbbell shoulder press + lateral raise demos
 - [x] Legs: leg press machine demo
 - [x] Arms: cable triceps pushdown demo
+
+## Current
+- [x] Fix leg press demo frames
+- [x] General bug check
