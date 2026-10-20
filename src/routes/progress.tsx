@@ -24,6 +24,7 @@ import {
   weightTrend,
 } from "@/lib/metrics";
 import { GOAL_LABEL } from "@/lib/types";
+import { RecoveryHeatmap } from "@/components/RecoveryHeatmap";
 
 export const Route = createFileRoute("/progress")({
   head: () => ({
@@ -127,6 +128,10 @@ function ProgressPage() {
             tone={verdict.tone === "good" ? "lime" : verdict.tone === "warn" ? "rose" : "muted"}
           />
         </div>
+      </Panel>
+
+      <Panel>
+        <RecoveryHeatmap sessions={sessions} />
       </Panel>
 
       <div className="grid grid-cols-12 gap-5">
