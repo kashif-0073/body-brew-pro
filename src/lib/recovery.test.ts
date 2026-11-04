@@ -16,17 +16,17 @@ const sess = (hoursAgo: number, sets: number): WorkoutSession => ({
 
 describe("muscle recovery", () => {
   it("6+ sets need 72 h: 36 h later is 50% recovering", () => {
-    const [r] = muscleRecovery([sess(36, 6)], ["Chest"], NOW);
+    const r = muscleRecovery([sess(36, 6)], ["Chest"], NOW)[0]!;
     expect(r.percent).toBe(50);
     expect(r.status).toBe("recovering");
   });
   it("under 6 sets need 48 h: fresh after 48 h", () => {
-    expect(muscleRecovery([sess(48, 3)], ["Chest"], NOW)[0].status).toBe("fresh");
+    expect(muscleRecovery([sess(48, 3)], ["Chest"], NOW)[0]!.status).toBe("fresh");
   });
   it("12 h after heavy work is fatigued", () => {
-    expect(muscleRecovery([sess(12, 8)], ["Chest"], NOW)[0].status).toBe("fatigued");
+    expect(muscleRecovery([sess(12, 8)], ["Chest"], NOW)[0]!.status).toBe("fatigued");
   });
   it("never trained muscle is untrained", () => {
-    expect(muscleRecovery([], ["Chest"], NOW)[0].status).toBe("untrained");
+    expect(muscleRecovery([], ["Chest"], NOW)[0]!.status).toBe("untrained");
   });
 });
