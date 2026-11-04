@@ -13,7 +13,8 @@
 
 - [x] Realistic muscle pictures + animated form demos in exercise details
 - [x] Browse-by-muscle picture grid in the library
-- [ ] Step 3: weekly muscle recovery heatmap on Progress (awaiting go-ahead)
+- [x] Weekly muscle recovery heatmap on Progress
+- [x] Squat demo bottom frame matched to the same camera angle
 
 ## Exercise demo corrections
 - [x] Rowing: real contracted barbell row frame + rowing machine demo
