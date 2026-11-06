@@ -125,6 +125,7 @@ function Dashboard() {
       </aside>
 
       <main className="col-span-12 lg:col-span-9 space-y-5">
+        <WeekStrip sessionDates={sessions.map((x) => x.date)} />
         <Panel className="relative overflow-hidden">
           <div className="pointer-events-none absolute -right-10 -top-10 size-48 rounded-full bg-cyan/20 blur-3xl" />
           <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
@@ -275,5 +276,50 @@ function Row({ label, value, accent }: { label: string; value: string; accent?: 
       <span className="text-muted-foreground">{label}</span>
       <span className={`font-semibold text-right ${accent ? "text-lime" : ""}`}>{value}</span>
     </div>
+  );
+}
+
+function WeekStrip({ sessionDates }: { sessionDates: string[] }) {
+  const trained = new Set(sessionDates);
+  const now = new Date();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    return { key, d, isToday: key === today(), done: trained.has(key), future: d > now };
+  });
+  const count = days.filter((d) => d.done).length;
+  return (
+    <Panel className="py-4">
+      <div className="flex items-center justify-between mb-3">
+        <Eyebrow>This week</Eyebrow>
+        <span className="text-xs text-muted-foreground">
+          <span className="font-semibold text-cyan">{count}</span> workout{count === 1 ? "" : "s"} logged
+        </span>
+      </div>
+      <div className="grid grid-cols-7 gap-2">
+        {days.map((day) => (
+          <div
+            key={day.key}
+            aria-label={`${day.d.toLocaleDateString(undefined, { weekday: "long" })}: ${day.done ? "trained" : "no workout"}`}
+            className={`flex flex-col items-center gap-1.5 rounded-xl py-2 transition-colors ${
+              day.isToday ? "border border-cyan/40 bg-cyan/[0.06]" : "glass-tile"
+            } ${day.future ? "opacity-50" : ""}`}
+          >
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              {day.d.toLocaleDateString(undefined, { weekday: "narrow" })}
+            </span>
+            <span className="font-display font-semibold text-sm">{day.d.getDate()}</span>
+            <span
+              className={`size-2 rounded-full ${
+                day.done ? "gradient-brand shadow-[0_0_10px_var(--cyan)]" : "bg-muted-foreground/30"
+              }`}
+            />
+          </div>
+        ))}
+      </div>
+    </Panel>
   );
 }
