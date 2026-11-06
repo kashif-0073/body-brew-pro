@@ -49,7 +49,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 key={item.to}
                 to={item.to}
                 activeOptions={{ exact: item.to === "/" }}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className={cn(
+                  item.to === "/profile" ? "inline-flex" : "hidden md:inline-flex",
+                  "shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
+                )}
                 activeProps={{ className: "text-foreground font-semibold bg-softer" }}
               >
                 <item.icon className="size-4" aria-hidden="true" />
