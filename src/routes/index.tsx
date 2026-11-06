@@ -281,14 +281,13 @@ function Row({ label, value, accent }: { label: string; value: string; accent?: 
 
 function WeekStrip({ sessionDates }: { sessionDates: string[] }) {
   const trained = new Set(sessionDates);
-  const now = new Date();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const todayKey = today();
+  const base = new Date(`${todayKey}T00:00:00Z`);
+  const monday = base.getTime() - ((base.getUTCDay() + 6) % 7) * 86_400_000;
   const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    return { key, d, isToday: key === today(), done: trained.has(key), future: d > now };
+    const d = new Date(monday + i * 86_400_000);
+    const key = d.toISOString().slice(0, 10);
+    return { key, d, isToday: key === todayKey, done: trained.has(key), future: key > todayKey };
   });
   const count = days.filter((d) => d.done).length;
   return (
@@ -303,15 +302,15 @@ function WeekStrip({ sessionDates }: { sessionDates: string[] }) {
         {days.map((day) => (
           <div
             key={day.key}
-            aria-label={`${day.d.toLocaleDateString(undefined, { weekday: "long" })}: ${day.done ? "trained" : "no workout"}`}
+            aria-label={`${day.d.toLocaleDateString(undefined, { weekday: "long", timeZone: "UTC" })}: ${day.done ? "trained" : "no workout"}`}
             className={`flex flex-col items-center gap-1.5 rounded-xl py-2 transition-colors ${
               day.isToday ? "border border-cyan/40 bg-cyan/[0.06]" : "glass-tile"
             } ${day.future ? "opacity-50" : ""}`}
           >
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              {day.d.toLocaleDateString(undefined, { weekday: "narrow" })}
+              {day.d.toLocaleDateString(undefined, { weekday: "narrow", timeZone: "UTC" })}
             </span>
-            <span className="font-display font-semibold text-sm">{day.d.getDate()}</span>
+            <span className="font-display font-semibold text-sm">{day.d.getUTCDate()}</span>
             <span
               className={`size-2 rounded-full ${
                 day.done ? "gradient-brand shadow-[0_0_10px_var(--cyan)]" : "bg-muted-foreground/30"
