@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Check, CircleHelp, Loader2, Plus, Sparkles, Timer, Trash2, Trophy, X } from "lucide-react";
+import { Check, CircleHelp, Loader2, Minus, Plus, Sparkles, Timer, Trash2, Trophy, X } from "lucide-react";
 import { ExerciseDetailsDialog } from "@/components/ExerciseDetailsDialog";
 import { Button, Eyebrow, Panel, StatTile, Tile } from "@/components/ui-kit";
 import { useStore } from "@/lib/store";
@@ -13,6 +13,7 @@ import {
   sessionVolume,
 } from "@/lib/metrics";
 import { EXERCISES, type ExerciseDef } from "@/lib/exercises";
+import { muscleImage } from "@/lib/visuals";
 import { generateAiPlan } from "@/lib/ai.functions";
 import { GOAL_LABEL, LEVEL_LABEL } from "@/lib/types";
 
@@ -271,7 +272,14 @@ function WorkoutPage() {
           return (
             <Panel key={`${ex.name}-${exIdx}`}>
               <div className="flex items-start justify-between gap-3 mb-3">
-                <div className="min-w-0">
+                <div className="min-w-0 flex items-start gap-3">
+                  <img
+                    src={muscleImage(ex.muscle)}
+                    alt={`${ex.muscle} highlighted`}
+                    loading="lazy"
+                    className="size-14 shrink-0 rounded-xl bg-plate object-cover border border-border"
+                  />
+                  <div className="min-w-0">
                   <p className="text-[11px] text-muted-foreground">{ex.muscle}</p>
                   <h2 className="font-display font-semibold text-xl flex items-center gap-2">
                     <span className="truncate">{ex.name}</span>
@@ -287,6 +295,7 @@ function WorkoutPage() {
                       : "First time logging this exercise"}
                     {pb > 0 ? ` · best 1RM ${pb} kg` : ""}
                   </p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Button size="sm" onClick={() => addSet(exIdx)}>
@@ -311,43 +320,39 @@ function WorkoutPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                {ex.sets.map((s, setIdx) => (
+                {ex.sets.map((s, setIdx) => {
+                  const isPrSet = s.done && pb > 0 && estimate1RM(s.weightKg, s.reps) > pb;
+                  return (
                   <div
                     key={setIdx}
-                    className={`grid grid-cols-12 items-center gap-2 rounded-xl px-3 py-2.5 ${
-                      s.done ? "bg-cyan/[0.08] border border-cyan/30" : "glass-tile"
+                    className={`grid grid-cols-12 items-center gap-2 rounded-xl px-3 py-2.5 transition-colors ${
+                      isPrSet
+                        ? "bg-gold/[0.1] border border-gold/50 pr-glow"
+                        : s.done
+                          ? "bg-cyan/[0.08] border border-cyan/30"
+                          : "glass-tile"
                     }`}
                   >
-                    <span className="col-span-2 sm:col-span-1 text-xs text-muted-foreground">
-                      #{setIdx + 1}
+                    <span className="col-span-1 text-xs text-muted-foreground flex items-center gap-0.5">
+                      {isPrSet ? <Trophy className="size-3 text-gold" aria-label="Personal record" /> : null}
+                      {setIdx + 1}
                     </span>
-                    <label className="col-span-4 sm:col-span-3 flex items-center gap-1">
-                      <input
-                        type="number"
-                        step="0.5"
-                        min="0"
-                        value={s.weightKg === 0 ? "" : s.weightKg}
-                        placeholder="0"
-                        onChange={(e) =>
-                          updateSet(exIdx, setIdx, { weightKg: Math.max(0, Number(e.target.value) || 0) })
-                        }
-                        className="w-full bg-transparent text-sm font-semibold outline-none"
-                      />
-                      <span className="text-xs text-muted-foreground">kg</span>
-                    </label>
-                    <label className="col-span-4 sm:col-span-2 flex items-center gap-1">
-                      <input
-                        type="number"
-                        min="0"
-                        value={s.reps === 0 ? "" : s.reps}
-                        placeholder="0"
-                        onChange={(e) =>
-                          updateSet(exIdx, setIdx, { reps: Math.max(0, Number(e.target.value) || 0) })
-                        }
-                        className="w-full bg-transparent text-sm font-semibold outline-none"
-                      />
-                      <span className="text-xs text-muted-foreground">reps</span>
-                    </label>
+                    <Stepper
+                      className="col-span-5 sm:col-span-3"
+                      value={s.weightKg}
+                      step={2.5}
+                      unit="kg"
+                      label={`set ${setIdx + 1} weight`}
+                      onChange={(v) => updateSet(exIdx, setIdx, { weightKg: v })}
+                    />
+                    <Stepper
+                      className="col-span-4 sm:col-span-2"
+                      value={s.reps}
+                      step={1}
+                      unit="reps"
+                      label={`set ${setIdx + 1} reps`}
+                      onChange={(v) => updateSet(exIdx, setIdx, { reps: v })}
+                    />
                     <label className="hidden sm:flex col-span-2 items-center gap-1">
                       <select
                         value={s.rpe ?? ""}
@@ -370,7 +375,7 @@ function WorkoutPage() {
                     <span className="hidden sm:block col-span-2 text-xs text-muted-foreground">
                       1RM {Math.round(estimate1RM(s.weightKg, s.reps))} kg
                     </span>
-                    <div className="col-span-2 flex justify-end items-center gap-1">
+                    <div className="col-span-2 sm:col-span-2 flex justify-end items-center gap-1">
                       <button
                         onClick={() => removeSet(exIdx, setIdx)}
                         aria-label={`Delete set ${setIdx + 1}`}
@@ -388,15 +393,16 @@ function WorkoutPage() {
                           }
                         }}
                         aria-label={s.done ? "Mark set not done" : "Mark set done"}
-                        className={`grid size-8 place-items-center rounded-lg transition-all ${
-                          s.done ? "gradient-brand text-ink" : "bg-softer text-muted-foreground"
+                        className={`grid size-9 place-items-center rounded-lg transition-all ${
+                          s.done ? "gradient-brand text-ink check-pop" : "bg-softer text-muted-foreground"
                         }`}
                       >
                         <Check className="size-4" />
                       </button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
               <input
                 value={ex.note ?? ""}
@@ -559,6 +565,57 @@ function WorkoutPage() {
           if (!open) setSelectedExercise(null);
         }}
       />
+    </div>
+  );
+}
+
+function Stepper({
+  value,
+  step,
+  unit,
+  label,
+  onChange,
+  className = "",
+}: {
+  value: number;
+  step: number;
+  unit: string;
+  label: string;
+  onChange: (v: number) => void;
+  className?: string;
+}) {
+  const btn =
+    "grid size-7 shrink-0 place-items-center rounded-md bg-softer text-muted-foreground hover:text-foreground active:scale-90 transition";
+  return (
+    <div className={`flex items-center gap-1 min-w-0 ${className}`}>
+      <button
+        type="button"
+        className={btn}
+        aria-label={`Decrease ${label}`}
+        onClick={() => onChange(Math.max(0, Math.round((value - step) * 10) / 10))}
+      >
+        <Minus className="size-3" />
+      </button>
+      <input
+        type="number"
+        inputMode="decimal"
+        min="0"
+        step={step}
+        value={value === 0 ? "" : value}
+        placeholder="0"
+        aria-label={label}
+        onChange={(e) => onChange(Math.max(0, Number(e.target.value) || 0))}
+        className="w-full min-w-0 bg-transparent text-center text-sm font-semibold outline-none"
+      />
+      <button
+        type="button"
+        className={btn}
+        aria-label={`Increase ${label}`}
+        onClick={() => onChange(Math.round((value + step) * 10) / 10)}
+      >
+        <Plus className="size-3" />
+      </button>
+      <span className="hidden sm:inline text-[10px] text-muted-foreground">{unit}</span>
     </div>
   );
 }
