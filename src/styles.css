@@ -41,6 +41,7 @@
   --color-violet: var(--violet);
   --color-lime: var(--lime);
   --color-rose: var(--rose);
+  --color-gold: var(--gold);
   --color-brand: var(--brand);
   --color-glass: var(--glass);
   --color-plate: var(--plate);
@@ -81,6 +82,7 @@
   --violet: oklch(0.55 0.19 295);
   --lime: oklch(0.62 0.16 135);
   --rose: oklch(0.65 0.19 15);
+  --gold: oklch(0.72 0.15 75);
   --brand: oklch(0.55 0.19 275);
 
   --glass: oklch(1 0 0 / 70%);
@@ -117,6 +119,7 @@
   --violet: oklch(0.68 0.18 295);
   --lime: oklch(0.86 0.19 125);
   --rose: oklch(0.72 0.16 15);
+  --gold: oklch(0.83 0.15 85);
   --brand: oklch(0.6 0.19 277);
 
   --glass: oklch(1 0 0 / 4%);
@@ -221,3 +224,12 @@
 @media (prefers-reduced-motion: reduce) {
   .demo-a, .demo-b, .muscle-pulse { animation: none; }
 }
+
+@keyframes check-pop {
+  0% { transform: scale(0.8); box-shadow: 0 0 0 0 color-mix(in oklab, var(--cyan) 60%, transparent); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); box-shadow: 0 0 0 10px transparent; }
+}
+@utility check-pop { animation: check-pop 0.45s ease-out; }
+@utility pr-glow { box-shadow: 0 0 18px -4px color-mix(in oklab, var(--gold) 70%, transparent); }
+@media (prefers-reduced-motion: reduce) { .check-pop { animation: none; } }
