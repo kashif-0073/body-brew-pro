@@ -76,6 +76,12 @@ export function ExerciseDetailsDialog({
             </p>
           )}
         </div>
+
+        <DialogClose asChild>
+          <Button variant="secondary" size="lg" className="w-full sm:hidden">
+            Close
+          </Button>
+        </DialogClose>
       </DialogContent>
     </Dialog>
   );

@@ -94,7 +94,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <nav
         aria-label="Main"
-        className="md:hidden fixed inset-x-0 bottom-0 z-40 glass-panel border-t border-border px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+        className="md:hidden fixed inset-x-0 bottom-0 z-40 bg-background/90 backdrop-blur-xl shadow-lg border-t border-border px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
       >
         <div className="grid grid-cols-5">
           {MOBILE_NAV.map((item) => (
