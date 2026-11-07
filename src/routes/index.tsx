@@ -124,7 +124,7 @@ function Dashboard() {
         </Panel>
       </aside>
 
-      <main className="col-span-12 lg:col-span-9 space-y-5">
+      <main className="col-span-12 lg:col-span-9 space-y-5 order-first lg:order-none">
         <WeekStrip sessionDates={sessions.map((x) => x.date)} />
         <Panel className="relative overflow-hidden">
           <div className="pointer-events-none absolute -right-10 -top-10 size-48 rounded-full bg-cyan/20 blur-3xl" />
