@@ -1,11 +1,13 @@
 import { Dumbbell, Gauge, Target } from "lucide-react";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui-kit";
 import { ExerciseVisual } from "@/components/ExerciseVisual";
 import { cuesFor, regionOf, type ExerciseDef } from "@/lib/exercises";
@@ -76,6 +78,12 @@ export function ExerciseDetailsDialog({
             </p>
           )}
         </div>
+
+        <DialogClose asChild>
+          <Button variant="secondary" size="lg" className="w-full sm:hidden">
+            Close
+          </Button>
+        </DialogClose>
       </DialogContent>
     </Dialog>
   );
