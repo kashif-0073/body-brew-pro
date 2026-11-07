@@ -281,8 +281,8 @@ function WorkoutPage() {
                   />
                   <div className="min-w-0">
                   <p className="text-[11px] text-muted-foreground">{ex.muscle}</p>
-                  <h2 className="font-display font-semibold text-xl flex items-center gap-2">
-                    <span className="truncate">{ex.name}</span>
+                  <h2 className="font-display font-semibold text-lg sm:text-xl leading-tight flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="break-words">{ex.name}</span>
                     {liveTop > 0 && liveTop > pb ? (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-ink gradient-brand rounded-full px-2 py-0.5">
                         <Trophy className="size-3" /> PR
