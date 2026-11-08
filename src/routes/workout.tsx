@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Check, CircleHelp, Loader2, Minus, Plus, Sparkles, Timer, Trash2, Trophy, X } from "lucide-react";
+import { Check, CircleHelp, Minus, Plus, Timer, Trash2, Trophy, X } from "lucide-react";
 import { ExerciseDetailsDialog } from "@/components/ExerciseDetailsDialog";
 import { Button, Eyebrow, Panel, StatTile, Tile } from "@/components/ui-kit";
 import { useStore } from "@/lib/store";

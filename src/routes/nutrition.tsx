@@ -6,8 +6,6 @@ import {
   ChevronRight,
   Copy,
   Droplets,
-  Loader2,
-  Sparkles,
   Star,
   Trash2,
 } from "lucide-react";
