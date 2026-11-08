@@ -8,7 +8,7 @@ export function ExerciseVisual({ name, muscle }: { name: string; muscle: string 
   if (!demo) {
     return (
       <figure className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl bg-plate">
-        <img src={muscleImage(muscle)} alt={`${muscle} muscles worked`} width={816} height={816} className="muscle-pulse aspect-square w-full object-contain" />
+        <img decoding="async" loading="lazy" src={muscleImage(muscle)} alt={`${muscle} muscles worked`} width={816} height={816} className="muscle-pulse aspect-square w-full object-contain" />
         <figcaption className="px-3 pb-3 text-center text-xs font-semibold text-plate-foreground">Target: {muscle}</figcaption>
       </figure>
     );
@@ -20,8 +20,8 @@ export function ExerciseVisual({ name, muscle }: { name: string; muscle: string 
         {demo ? (
           <>
             <div className="relative aspect-square">
-              <img src={demo.start} alt={`${name} start position`} width={816} height={816} className="demo-a absolute inset-0 size-full object-contain" />
-              <img src={demo.end} alt={`${name} end position`} width={816} height={816} loading="lazy" className="demo-b absolute inset-0 size-full object-contain" />
+              <img decoding="async" loading="lazy" src={demo.start} alt={`${name} start position`} width={816} height={816} className="demo-a absolute inset-0 size-full object-contain" />
+              <img decoding="async" loading="lazy" src={demo.end} alt={`${name} end position`} width={816} height={816} loading="lazy" className="demo-b absolute inset-0 size-full object-contain" />
             </div>
             <figcaption className="absolute inset-x-2 bottom-2 flex items-center justify-between gap-2 text-[10px] font-semibold uppercase text-plate-foreground">
               <span className="demo-a rounded-full bg-plate/90 px-2 py-1 shadow-sm">1 · {demo.startLabel}</span>
@@ -33,12 +33,12 @@ export function ExerciseVisual({ name, muscle }: { name: string; muscle: string 
           </>
         ) : (
           <div className="relative aspect-square">
-            <img src={muscleImage(muscle)} alt={`${muscle} muscles worked`} width={816} height={816} className="muscle-pulse absolute inset-0 size-full object-contain" />
+            <img decoding="async" loading="lazy" src={muscleImage(muscle)} alt={`${muscle} muscles worked`} width={816} height={816} className="muscle-pulse absolute inset-0 size-full object-contain" />
           </div>
         )}
       </figure>
       <figure className="flex flex-col justify-center overflow-hidden rounded-2xl bg-plate">
-        <img src={muscleImage(muscle)} alt={`${muscle} highlighted`} width={816} height={816} loading="lazy" className="aspect-square w-full object-contain" />
+        <img decoding="async" loading="lazy" src={muscleImage(muscle)} alt={`${muscle} highlighted`} width={816} height={816} loading="lazy" className="aspect-square w-full object-contain" />
         <figcaption className="px-3 pb-3 text-center text-xs font-semibold text-plate-foreground">
           Target: {muscle}
         </figcaption>

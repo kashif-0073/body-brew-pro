@@ -17,7 +17,10 @@ export interface Profile {
   bodyFatPct: number;
   restingHr: number;
   activity: Activity;
+  split?: SplitStyle;
 }
+
+export type SplitStyle = "auto" | "bodypart" | "ppl" | "upperlower";
 
 export interface PlannedExercise {
   name: string;

@@ -27,9 +27,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased relative overflow-hidden">
-      <div className="pointer-events-none absolute -top-40 -left-24 size-[520px] rounded-full bg-violet/30 blur-[120px] drift" />
-      <div className="pointer-events-none absolute top-32 right-[-140px] size-[560px] rounded-full bg-cyan/25 blur-[130px] drift" />
-      <div className="pointer-events-none absolute bottom-[-160px] left-1/3 size-[480px] rounded-full bg-brand/25 blur-[130px] drift" />
+      <div className="pointer-events-none absolute inset-0 ambient-bg" />
 
       <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 py-6">
         <header className="flex flex-wrap items-center justify-between gap-3 mb-6 sm:mb-8">
