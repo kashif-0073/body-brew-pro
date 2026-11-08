@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Check, CircleHelp, Loader2, Minus, Plus, Sparkles, Timer, Trash2, Trophy, X } from "lucide-react";
 import { ExerciseDetailsDialog } from "@/components/ExerciseDetailsDialog";
@@ -14,7 +13,6 @@ import {
 } from "@/lib/metrics";
 import { EXERCISES, type ExerciseDef } from "@/lib/exercises";
 import { muscleImage } from "@/lib/visuals";
-import { generateAiPlan } from "@/lib/ai.functions";
 import { GOAL_LABEL, LEVEL_LABEL } from "@/lib/types";
 
 export const Route = createFileRoute("/workout")({
@@ -79,11 +77,8 @@ function WorkoutPage() {
   const [rest, setRest] = useState(0);
   const [restRunning, setRestRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [aiRequest, setAiRequest] = useState("");
-  const [loadingAi, setLoadingAi] = useState(false);
   const [picker, setPicker] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<ExerciseDef | null>(null);
-  const aiPlan = useServerFn(generateAiPlan);
   const startedAt = state.active?.startedAt;
 
   // Rest countdown.
@@ -132,30 +127,6 @@ function WorkoutPage() {
     );
   }
 
-  const runAi = async () => {
-    setLoadingAi(true);
-    try {
-      const days = await aiPlan({
-        data: {
-          level: profile.level,
-          goal: profile.goal,
-          daysPerWeek: profile.daysPerWeek,
-          equipment: profile.equipment,
-          weightKg: profile.weightKg,
-          age: profile.age,
-          request: aiRequest,
-        },
-      });
-      if (!days.length) throw new Error("Empty plan");
-      setPlan(days);
-      toast.success("AI coach built a new weekly plan.");
-      setAiRequest("");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not build the AI plan.");
-    } finally {
-      setLoadingAi(false);
-    }
-  };
 
   if (active) {
     const volume = sessionVolume(active);
@@ -477,7 +448,7 @@ function WorkoutPage() {
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {LEVEL_LABEL[profile.level]} · {GOAL_LABEL[profile.goal]} ·{" "}
-              {plan[0]?.source === "ai" ? "AI coach plan" : "Built-in programme"}
+              Built-in programme
             </p>
           </div>
         </div>
@@ -534,25 +505,6 @@ function WorkoutPage() {
         })}
       </div>
 
-      <Panel>
-        <Eyebrow className="text-violet">AI coach</Eyebrow>
-        <h2 className="font-display font-bold text-2xl mb-2">Rebuild the week around a request</h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          Example: “sore lower back, swap deadlifts”, or “add two conditioning finishers”.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input
-            value={aiRequest}
-            onChange={(e) => setAiRequest(e.target.value)}
-            placeholder="What should the coach change?"
-            className="flex-1 glass-tile rounded-xl px-4 py-3 text-sm outline-none focus:border-cyan/50"
-          />
-          <Button variant="primary" onClick={() => void runAi()} disabled={loadingAi}>
-            {loadingAi ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-            {loadingAi ? "Coaching…" : "Generate AI plan"}
-          </Button>
-        </div>
-      </Panel>
 
       <Tile className="text-xs text-muted-foreground">
         Loads start from what you actually lifted last time: hit every set at the target reps and the

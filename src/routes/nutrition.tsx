@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
   ChevronLeft,
@@ -15,7 +14,6 @@ import {
 import { Button, ChoiceRow, Eyebrow, Field, Panel, Ring, StatTile } from "@/components/ui-kit";
 import { useStore, today } from "@/lib/store";
 import { macroTargets, waterTarget } from "@/lib/metrics";
-import { estimateMeal } from "@/lib/ai.functions";
 import type { Meal } from "@/lib/types";
 
 export const Route = createFileRoute("/nutrition")({
@@ -24,12 +22,12 @@ export const Route = createFileRoute("/nutrition")({
       { title: "Calorie & Protein Tracker — PulseForge" },
       {
         name: "description",
-        content: "Track calories, protein, carbs, fat and hydration with AI or manual entry.",
+        content: "Track calories, protein, carbs, fat and hydration with quick manual entry.",
       },
       { property: "og:title", content: "Calorie & Protein Tracker — PulseForge" },
       {
         property: "og:description",
-        content: "Track calories, protein, carbs, fat and hydration with AI or manual entry.",
+        content: "Track calories, protein, carbs, fat and hydration with quick manual entry.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -54,12 +52,9 @@ function NutritionPage() {
     removeFavorite,
     addWater,
   } = useStore();
-  const estimate = useServerFn(estimateMeal);
   const [date, setDate] = useState(today());
   const [slot, setSlot] = useState<Slot>("breakfast");
   const [manual, setManual] = useState({ name: "", kcal: 0, protein: 0, carbs: 0, fat: 0 });
-  const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
 
   if (!hydrated) return <Panel className="h-64 animate-pulse" />;
   const { profile, meals, favorites, water, sessions } = state;
@@ -105,23 +100,6 @@ function NutritionPage() {
     toast.success("Meal logged.");
   };
 
-  const runAi = async () => {
-    if (description.trim().length < 3) {
-      toast.error("Describe what you ate first.");
-      return;
-    }
-    setLoading(true);
-    try {
-      const out = await estimate({ data: { description } });
-      addMeal({ ...out, slot, date });
-      setDescription("");
-      toast.success(`${out.name} · ${out.kcal} kcal · ${out.protein} g protein`);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not estimate that meal.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="grid grid-cols-12 gap-5">
@@ -239,23 +217,8 @@ function NutritionPage() {
 
       <div className="col-span-12 lg:col-span-8 space-y-5">
         <Panel>
-          <Eyebrow className="text-violet">AI meal entry</Eyebrow>
-          <h2 className="font-display font-bold text-2xl mb-3">Describe what you ate</h2>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !loading) void runAi();
-              }}
-              placeholder="e.g. two eggs, 80 g oats with milk and a banana"
-              className="flex-1 glass-tile rounded-xl px-4 py-3 text-sm outline-none focus:border-cyan/50"
-            />
-            <Button variant="primary" onClick={() => void runAi()} disabled={loading}>
-              {loading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              {loading ? "Estimating…" : "Estimate & log"}
-            </Button>
-          </div>
+          <Eyebrow>Meal slot</Eyebrow>
+          <h2 className="font-display font-bold text-2xl mb-1">Which meal are you logging?</h2>
           <div className="mt-4">
             <ChoiceRow<Slot>
               label="Meal slot"
