@@ -466,7 +466,7 @@ function WorkoutPage() {
               size="sm"
               onClick={() => {
                 const day = buildMuscleDay(profile, t, `quick-${Date.now()}`, true);
-                if (!day.exercises.length) return toast.error("No exercises match your equipment");
+                if (!day.exercises.length) { toast.error("No exercises match your equipment"); return; }
                 startSession(day);
               }}
             >
