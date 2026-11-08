@@ -1,3 +1,5 @@
+import { SPLIT_LABEL } from "@/lib/planner";
+import type { SplitStyle } from "@/lib/types";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -143,6 +145,13 @@ function ProfilePage() {
             value={String(form.daysPerWeek)}
             onChange={(v) => set("daysPerWeek", Number(v))}
             options={[2, 3, 4, 5, 6].map((n) => ({ value: String(n), label: `${n} days` }))}
+          />
+
+          <ChoiceRow<SplitStyle>
+            label="Training split"
+            value={form.split ?? "auto"}
+            onChange={(v) => set("split", v)}
+            options={(Object.keys(SPLIT_LABEL) as SplitStyle[]).map((k) => ({ value: k, label: SPLIT_LABEL[k] }))}
           />
 
           <ChoiceRow<Sex>

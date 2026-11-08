@@ -16,7 +16,7 @@ import type {
   Profile,
   WorkoutSession,
 } from "./types";
-import { generatePlan } from "./planner";
+import { generatePlanFor as generatePlan } from "./planner";
 import { lastPerformance, progressedLoad } from "./metrics";
 
 const KEY = "pulseforge-state-v1";

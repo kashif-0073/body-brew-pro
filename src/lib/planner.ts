@@ -1,5 +1,5 @@
 import { EXERCISES, levelRank, type ExerciseDef } from "./exercises";
-import type { Goal, Level, PlannedDay, PlannedExercise, Profile } from "./types";
+import type { SplitStyle, Goal, Level, PlannedDay, PlannedExercise, Profile } from "./types";
 
 interface Scheme {
   sets: number;
@@ -120,3 +120,72 @@ export function generatePlan(p: Profile): PlannedDay[] {
     };
   });
 }
+
+type MuscleDay = { title: string; focus: string; muscles: string[] };
+
+const BODYPART: MuscleDay[] = [
+  { title: "Chest + Triceps", focus: "Chest · Triceps", muscles: ["Chest", "Chest", "Triceps", "Chest", "Triceps"] },
+  { title: "Back + Biceps", focus: "Back · Biceps", muscles: ["Back", "Back", "Biceps", "Back", "Biceps"] },
+  { title: "Shoulders + Abs", focus: "Shoulders · Rear delts · Core", muscles: ["Shoulders", "Shoulders", "Rear delts", "Core", "Core"] },
+  { title: "Leg Day", focus: "Quads · Hamstrings · Calves", muscles: ["Quads", "Hamstrings", "Quads", "Glutes", "Calves", "Posterior chain"] },
+  { title: "Arms + Conditioning", focus: "Biceps · Triceps · Cardio", muscles: ["Biceps", "Triceps", "Biceps", "Triceps", "Cardio"] },
+  { title: "Upper Pump", focus: "Chest · Back · Shoulders", muscles: ["Chest", "Back", "Shoulders", "Chest", "Back"] },
+];
+const PPL: MuscleDay[] = [
+  { title: "Push Day", focus: "Chest · Shoulders · Triceps", muscles: ["Chest", "Shoulders", "Chest", "Triceps", "Shoulders", "Triceps"] },
+  { title: "Pull Day", focus: "Back · Biceps", muscles: ["Back", "Back", "Rear delts", "Biceps", "Back", "Biceps"] },
+  { title: "Leg Day", focus: "Quads · Hamstrings · Glutes", muscles: ["Quads", "Hamstrings", "Quads", "Glutes", "Calves"] },
+];
+const UL: MuscleDay[] = [
+  { title: "Upper Body", focus: "Chest · Back · Shoulders · Arms", muscles: ["Chest", "Back", "Shoulders", "Back", "Biceps", "Triceps"] },
+  { title: "Lower Body", focus: "Quads · Hamstrings · Glutes", muscles: ["Quads", "Hamstrings", "Glutes", "Quads", "Calves", "Core"] },
+];
+
+/** Single-target sessions a user can start any day. */
+export const QUICK_TARGETS: MuscleDay[] = [
+  { title: "Chest Only", focus: "Chest", muscles: ["Chest"] },
+  { title: "Back Only", focus: "Back", muscles: ["Back", "Rear delts"] },
+  { title: "Shoulders Only", focus: "Shoulders", muscles: ["Shoulders", "Rear delts"] },
+  { title: "Arms Only", focus: "Biceps · Triceps", muscles: ["Biceps", "Triceps"] },
+  { title: "Legs Only", focus: "Legs", muscles: ["Quads", "Hamstrings", "Glutes", "Calves"] },
+  { title: "Core + Cardio", focus: "Core · Cardio", muscles: ["Core", "Cardio"] },
+  BODYPART[0]!,
+  BODYPART[1]!,
+];
+
+export function buildMuscleDay(p: Profile, day: MuscleDay, id: string, relaxLevel = false): PlannedDay {
+  const pool = EXERCISES.filter(
+    (e) => p.equipment.includes(e.equipment) && (relaxLevel || levelRank(e.minLevel) <= levelRank(p.level)),
+  );
+  const target = p.level === "beginner" ? 4 : p.level === "intermediate" ? 5 : 6;
+  const used = new Set<string>();
+  const out: PlannedExercise[] = [];
+  for (let slot = 0; out.length < target && slot < day.muscles.length * 3; slot++) {
+    const m = day.muscles[slot % day.muscles.length]!;
+    const c = pool
+      .filter((e) => e.muscle === m && !used.has(e.name))
+      .sort((a, b) => (a.compound === b.compound ? 0 : a.compound ? -1 : 1))[0];
+    if (c) { used.add(c.name); out.push(toPlanned(c, p)); }
+  }
+  const duration = out.reduce((t, e) => t + e.sets * (e.restSec + 45), 0) / 60;
+  return { id, title: day.title, focus: day.focus, durationMin: Math.round(duration / 5) * 5, exercises: out, source: "built-in" as const };
+}
+
+export function generatePlanFor(p: Profile): PlannedDay[] {
+  const style: SplitStyle = p.split ?? "auto";
+  if (style === "auto") return generatePlan(p);
+  const days = Math.min(6, Math.max(2, p.daysPerWeek));
+  const base = style === "bodypart" ? BODYPART : style === "ppl" ? PPL : UL;
+  const seq = style === "bodypart" ? base.slice(0, Math.max(4, days)) : Array.from({ length: days }, (_, i) => base[i % base.length]!);
+  return seq.map((d, i) => {
+    const round = style === "bodypart" ? 0 : Math.floor(i / base.length);
+    return buildMuscleDay(p, round ? { ...d, title: `${d.title} ${String.fromCharCode(65 + round)}` } : d, `day-${i + 1}`);
+  });
+}
+
+export const SPLIT_LABEL: Record<SplitStyle, string> = {
+  auto: "Auto (by days)",
+  bodypart: "Body-part split",
+  ppl: "Push / Pull / Legs",
+  upperlower: "Upper / Lower",
+};

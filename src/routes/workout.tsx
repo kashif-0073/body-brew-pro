@@ -13,6 +13,7 @@ import {
 } from "@/lib/metrics";
 import { EXERCISES, type ExerciseDef } from "@/lib/exercises";
 import { muscleImage } from "@/lib/visuals";
+import { QUICK_TARGETS, buildMuscleDay } from "@/lib/planner";
 import { GOAL_LABEL, LEVEL_LABEL } from "@/lib/types";
 
 export const Route = createFileRoute("/workout")({
@@ -451,6 +452,27 @@ function WorkoutPage() {
               Built-in programme
             </p>
           </div>
+        </div>
+      </Panel>
+
+      <Panel>
+        <Eyebrow>Quick start</Eyebrow>
+        <p className="text-sm text-muted-foreground mb-3">Train one target today, outside your plan.</p>
+        <div className="flex flex-wrap gap-2">
+          {QUICK_TARGETS.map((t) => (
+            <Button
+              key={t.title}
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                const day = buildMuscleDay(profile, t, `quick-${Date.now()}`, true);
+                if (!day.exercises.length) { toast.error("No exercises match your equipment"); return; }
+                startSession(day);
+              }}
+            >
+              {t.title}
+            </Button>
+          ))}
         </div>
       </Panel>
 
