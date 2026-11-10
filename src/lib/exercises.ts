@@ -47,6 +47,102 @@ export const regionOf = (muscle: string): Region => MUSCLE_REGION[muscle] ?? "Co
 
 /** Step-by-step setup and execution cues, keyed by exercise name. */
 export const CUES: Record<string, string[]> = {
+  "Flat Dumbbell Bench Press": [
+    "Lie flat with feet planted, dumbbells at chest level, palms forward.",
+    "Pinch the shoulder blades back and down.",
+    "Press up and slightly in until arms are straight over the chest.",
+    "Lower slowly until the elbows sit just below the bench line.",
+  ],
+  "Incline Barbell Bench Press": [
+    "Set the bench to 30–45°, eyes under the bar.",
+    "Grip just outside shoulder width, shoulder blades squeezed.",
+    "Lower to the upper chest, elbows ~45° from the torso.",
+    "Press straight up over the shoulders.",
+  ],
+  "Decline Bench Press": [
+    "Lock the legs under the pads, head on the low end.",
+    "Grip slightly wider than shoulders.",
+    "Lower to the lower chest under control.",
+    "Press back up without bouncing off the chest.",
+  ],
+  "Dumbbell Fly": [
+    "Lie flat, dumbbells over the chest, palms facing each other.",
+    "Keep a soft, fixed bend in the elbows.",
+    "Open the arms wide until you feel a deep chest stretch.",
+    "Hug the weights back together using the chest, not the arms.",
+  ],
+  "Incline Dumbbell Fly": [
+    "Set the bench to 30°, dumbbells over the upper chest.",
+    "Soft bend in the elbows throughout.",
+    "Lower out wide to a stretch, then squeeze back up.",
+  ],
+  "Cable Crossover": [
+    "Set pulleys high, step forward with a slight lean.",
+    "Soft elbows, chest up.",
+    "Sweep the handles down and together in front of the hips.",
+    "Return slowly to a full stretch.",
+  ],
+  "Low-to-High Cable Fly": [
+    "Set pulleys low, stand in the middle with a staggered stance.",
+    "Sweep the handles up and together to chin height.",
+    "Squeeze the upper chest, then lower with control.",
+  ],
+  "Pec Deck Fly": [
+    "Seat height so handles line up with mid-chest.",
+    "Back flat on the pad, slight bend in the elbows.",
+    "Bring the handles together and squeeze for a second.",
+    "Open slowly until you feel a chest stretch.",
+  ],
+  "Smith Machine Bench Press": [
+    "Position the bench so the bar lowers to mid-chest.",
+    "Unrack by twisting the bar, shoulder blades tight.",
+    "Lower under control, press back up smoothly.",
+  ],
+  "Chest Dip": [
+    "Grip the bars, lean the torso forward ~30°.",
+    "Lower until the shoulders are just below the elbows.",
+    "Press up while keeping the forward lean.",
+  ],
+  "Incline Push-Up": [
+    "Hands on a bench, slightly wider than shoulders.",
+    "Body in a straight line from head to heels.",
+    "Lower the chest to the bench, then push away.",
+  ],
+  "Rope Triceps Pushdown": [
+    "Stand tall, elbows pinned to your sides.",
+    "Push the rope down and spread the ends apart at the bottom.",
+    "Return slowly until forearms are just above parallel.",
+  ],
+  "Overhead Cable Triceps Extension": [
+    "Face away from a low pulley, rope behind the head.",
+    "Elbows point forward and stay still.",
+    "Extend the arms fully overhead, then lower to a deep stretch.",
+  ],
+  "Overhead Dumbbell Triceps Extension": [
+    "Hold one dumbbell overhead with both hands.",
+    "Keep elbows close and pointing up.",
+    "Lower behind the head, then extend fully.",
+  ],
+  "Skull Crusher": [
+    "Lie flat, bar over the shoulders, narrow grip.",
+    "Bend only at the elbows, lowering to the forehead.",
+    "Extend back up without flaring the elbows.",
+  ],
+  "Dumbbell Kickback": [
+    "Hinge forward, upper arm parallel to the floor.",
+    "Extend the forearm back until the arm is straight.",
+    "Squeeze the triceps, lower slowly.",
+  ],
+  "Bench Dip": [
+    "Hands on a bench behind you, legs out front.",
+    "Lower until the elbows reach ~90°.",
+    "Press back up, keeping the hips close to the bench.",
+  ],
+  "Diamond Push-Up": [
+    "Hands together under the chest forming a diamond.",
+    "Body straight, elbows tucked back.",
+    "Lower the chest to the hands, then press up.",
+  ],
   "Barbell Bench Press": [
     "Lie flat, eyes under the bar, feet planted wide and flat.",
     "Pinch the shoulder blades back and down; keep a small arch.",
@@ -313,6 +409,24 @@ export const EXERCISES: ExerciseDef[] = [
   { name: "Push-Up", muscle: "Chest", group: "push", equipment: "bodyweight", bwRatio: 0, minLevel: "beginner", compound: true },
   { name: "Dip", muscle: "Triceps", group: "push", equipment: "bodyweight", bwRatio: 0, minLevel: "intermediate", compound: true },
   { name: "Close-Grip Bench Press", muscle: "Triceps", group: "push", equipment: "barbell", bwRatio: 0.6, minLevel: "professional", compound: true },
+  { name: "Flat Dumbbell Bench Press", muscle: "Chest", group: "push", equipment: "dumbbell", bwRatio: 0.3, minLevel: "beginner", compound: true },
+  { name: "Incline Barbell Bench Press", muscle: "Chest", group: "push", equipment: "barbell", bwRatio: 0.65, minLevel: "intermediate", compound: true },
+  { name: "Decline Bench Press", muscle: "Chest", group: "push", equipment: "barbell", bwRatio: 0.75, minLevel: "intermediate", compound: true },
+  { name: "Dumbbell Fly", muscle: "Chest", group: "push", equipment: "dumbbell", bwRatio: 0.12, minLevel: "beginner", compound: false },
+  { name: "Incline Dumbbell Fly", muscle: "Chest", group: "push", equipment: "dumbbell", bwRatio: 0.1, minLevel: "beginner", compound: false },
+  { name: "Cable Crossover", muscle: "Chest", group: "push", equipment: "machine", bwRatio: 0.15, minLevel: "beginner", compound: false },
+  { name: "Low-to-High Cable Fly", muscle: "Chest", group: "push", equipment: "machine", bwRatio: 0.12, minLevel: "beginner", compound: false },
+  { name: "Pec Deck Fly", muscle: "Chest", group: "push", equipment: "machine", bwRatio: 0.4, minLevel: "beginner", compound: false },
+  { name: "Smith Machine Bench Press", muscle: "Chest", group: "push", equipment: "machine", bwRatio: 0.7, minLevel: "beginner", compound: true },
+  { name: "Chest Dip", muscle: "Chest", group: "push", equipment: "bodyweight", bwRatio: 0, minLevel: "intermediate", compound: true },
+  { name: "Incline Push-Up", muscle: "Chest", group: "push", equipment: "bodyweight", bwRatio: 0, minLevel: "beginner", compound: true },
+  { name: "Rope Triceps Pushdown", muscle: "Triceps", group: "push", equipment: "machine", bwRatio: 0.3, minLevel: "beginner", compound: false },
+  { name: "Overhead Cable Triceps Extension", muscle: "Triceps", group: "push", equipment: "machine", bwRatio: 0.3, minLevel: "beginner", compound: false },
+  { name: "Overhead Dumbbell Triceps Extension", muscle: "Triceps", group: "push", equipment: "dumbbell", bwRatio: 0.2, minLevel: "beginner", compound: false },
+  { name: "Skull Crusher", muscle: "Triceps", group: "push", equipment: "barbell", bwRatio: 0.3, minLevel: "intermediate", compound: false },
+  { name: "Dumbbell Kickback", muscle: "Triceps", group: "push", equipment: "dumbbell", bwRatio: 0.08, minLevel: "beginner", compound: false },
+  { name: "Bench Dip", muscle: "Triceps", group: "push", equipment: "bodyweight", bwRatio: 0, minLevel: "beginner", compound: true },
+  { name: "Diamond Push-Up", muscle: "Triceps", group: "push", equipment: "bodyweight", bwRatio: 0, minLevel: "intermediate", compound: true },
 
   // Pull
   { name: "Barbell Row", muscle: "Back", group: "pull", equipment: "barbell", bwRatio: 0.7, minLevel: "intermediate", compound: true },

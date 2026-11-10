@@ -11,7 +11,7 @@ import {
   personalBests,
   sessionVolume,
 } from "@/lib/metrics";
-import { EXERCISES, type ExerciseDef } from "@/lib/exercises";
+import { EXERCISES, REGIONS, regionOf, type ExerciseDef, type Region } from "@/lib/exercises";
 import { muscleImage } from "@/lib/visuals";
 import { QUICK_TARGETS, buildMuscleDay } from "@/lib/planner";
 import { GOAL_LABEL, LEVEL_LABEL } from "@/lib/types";
@@ -79,6 +79,8 @@ function WorkoutPage() {
   const [restRunning, setRestRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [picker, setPicker] = useState(false);
+  const [pickQuery, setPickQuery] = useState("");
+  const [pickRegion, setPickRegion] = useState<Region | "All">("All");
   const [selectedExercise, setSelectedExercise] = useState<ExerciseDef | null>(null);
   const startedAt = state.active?.startedAt;
 
@@ -394,10 +396,31 @@ function WorkoutPage() {
             </Button>
           </div>
           {picker ? (
-            <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-80 overflow-auto pr-1">
-              {EXERCISES.filter(
-                (e) => profile.equipment.includes(e.equipment) || e.equipment === "bodyweight",
-              ).map((e) => (
+            <>
+            <input
+              value={pickQuery}
+              onChange={(e) => setPickQuery(e.target.value)}
+              placeholder="Search exercises…"
+              className="mt-4 w-full glass-tile rounded-xl px-3 py-2.5 text-sm outline-none focus:border-cyan/50"
+            />
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {(["All", ...REGIONS] as const).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setPickRegion(r)}
+                  className={`rounded-full px-3 py-1 text-xs border ${pickRegion === r ? "border-cyan text-cyan bg-cyan/10" : "border-border text-muted-foreground"}`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-96 overflow-auto pr-1">
+              {EXERCISES.filter((e) => {
+                const q = pickQuery.trim().toLowerCase();
+                const okQ = !q || `${e.name} ${e.muscle} ${e.equipment}`.toLowerCase().includes(q);
+                const okR = pickRegion === "All" || regionOf(e.muscle) === pickRegion;
+                return okQ && okR;
+              }).map((e) => (
                 <button
                   key={e.name}
                   onClick={() => {
@@ -418,6 +441,7 @@ function WorkoutPage() {
                 </button>
               ))}
             </div>
+            </>
           ) : null}
           <textarea
             value={active.notes ?? ""}
