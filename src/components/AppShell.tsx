@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { BookOpen, ChartNoAxesCombined, Dumbbell, House, Moon, Salad, Sun, UserRound } from "lucide-react";
+import { Bot, BookOpen, ChartNoAxesCombined, Dumbbell, House, Moon, Salad, Sun, UserRound } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { ActiveWorkoutPill } from "@/components/ActiveWorkoutPill";
@@ -11,6 +11,7 @@ const NAV = [
   { to: "/exercises", label: "Exercises", icon: BookOpen },
   { to: "/progress", label: "Progress", icon: ChartNoAxesCombined },
   { to: "/nutrition", label: "Nutrition", icon: Salad },
+  { to: "/coach", label: "Smart Coach", icon: Bot },
   { to: "/profile", label: "Profile", icon: UserRound },
 ] as const;
 
@@ -20,6 +21,7 @@ const MOBILE_NAV = [
   { to: "/exercises", label: "Exercises", icon: BookOpen },
   { to: "/nutrition", label: "Nutrition", icon: Salad },
   { to: "/progress", label: "Progress", icon: ChartNoAxesCombined },
+  { to: "/coach", label: "Coach", icon: Bot },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -94,7 +96,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         aria-label="Main"
         className="md:hidden fixed inset-x-0 bottom-0 z-40 bg-background/90 backdrop-blur-xl shadow-lg border-t border-border px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
       >
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-6">
           {MOBILE_NAV.map((item) => (
             <Link
               key={item.to}

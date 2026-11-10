@@ -26,3 +26,6 @@
 ## Current
 - [x] Fix leg press demo frames
 - [x] General bug check
+
+## Smart Coach
+- [x] New Smart Coach section (free Gemini chat, profile-aware)
