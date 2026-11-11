@@ -17,7 +17,7 @@ For pain or medical issues, give general guidance and recommend seeing a profess
 export const askCoach = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data }) => {
-    const key = data.apiKey?.trim() || process.env.GEMINI_API_KEY;
+    const key = data.apiKey?.trim() || process.env['GEMINI_API_KEY'];
     if (!key) return { ok: false as const, error: "Add your free Gemini key to start chatting." };
 
     const res = await fetch(
