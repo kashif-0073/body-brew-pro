@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { Bot, BookOpen, ChartNoAxesCombined, Dumbbell, House, Moon, Salad, Sun, UserRound } from "lucide-react";
+import { LogIn, LogOut, Bot, BookOpen, ChartNoAxesCombined, Dumbbell, House, Moon, Salad, Sun, UserRound } from "lucide-react";
 import { useTheme } from "@/lib/theme";
+import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { ActiveWorkoutPill } from "@/components/ActiveWorkoutPill";
 
@@ -26,6 +27,7 @@ const MOBILE_NAV = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { theme, toggle } = useTheme();
+  const { user, signOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased relative overflow-hidden">
@@ -59,6 +61,24 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <span className="hidden lg:inline">{item.label}</span>
               </Link>
             ))}
+            {user ? (
+              <button
+                onClick={() => void signOut()}
+                title={user.email ?? "Signed in"}
+                className="ml-1 shrink-0 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="size-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Sign out</span>
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                className="ml-1 shrink-0 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold gradient-brand text-ink"
+              >
+                <LogIn className="size-4" aria-hidden="true" />
+                <span>Sign in</span>
+              </Link>
+            )}
             <button
               onClick={toggle}
               aria-label="Toggle colour theme"

@@ -18,6 +18,9 @@ import type {
 } from "./types";
 import { generatePlanFor as generatePlan } from "./planner";
 import { lastPerformance, progressedLoad } from "./metrics";
+import { useAuth } from "./auth";
+import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 const KEY = "pulseforge-state-v1";
 
@@ -96,6 +99,45 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       /* storage full or unavailable — keep the app usable in memory */
     }
   }, [state, hydrated]);
+
+  // Cloud sync: when signed in, load the account's saved data (or upload local data the first time),
+  // then save every change back to the cloud.
+  const { user } = useAuth();
+  const [syncedFor, setSyncedFor] = useState<string | null>(null);
+  useEffect(() => {
+    if (!hydrated || !user) {
+      setSyncedFor(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from("user_state").select("data").eq("user_id", user.id).maybeSingle();
+      if (cancelled) return;
+      const cloud = data?.data as Partial<AppState> | undefined;
+      if (cloud && Object.keys(cloud).length > 0) {
+        setState({ ...EMPTY, ...cloud });
+      } else {
+        setState((cur) => {
+          void supabase.from("user_state").upsert({ user_id: user.id, data: cur as unknown as Json });
+          return cur;
+        });
+      }
+      setSyncedFor(user.id);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, hydrated]);
+
+  useEffect(() => {
+    if (!user || syncedFor !== user.id) return;
+    const t = setTimeout(() => {
+      void supabase
+        .from("user_state")
+        .upsert({ user_id: user.id, data: state as unknown as Json, updated_at: new Date().toISOString() });
+    }, 800);
+    return () => clearTimeout(t);
+  }, [state, user, syncedFor]);
 
   const saveProfile = useCallback((p: Profile) => {
     setState((s) => ({
