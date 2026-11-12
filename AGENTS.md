@@ -10,3 +10,5 @@
 <!-- LOVABLE:END -->
 
 - Exercise guidance uses the built-in exercise catalog as its single source of truth so workout cues and library details stay consistent.
+
+- Signed-in users store their whole app state as one JSON row in public.user_state (cloud wins on sign-in; local data uploads if the account is empty); guests stay on localStorage. Why: keeps the existing local store untouched while adding cross-device sync.
