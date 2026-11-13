@@ -131,7 +131,7 @@ function CoachPage() {
         <Panel>
           <div className="flex items-center gap-2 font-semibold"><KeyRound className="size-4" /> Connect your free key</div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Smart Coach uses Google Gemini's free tier. Get a key in one minute at{" "}
+            Smart Coach supports current AI Studio keys, including the new AQ format. Get a key at{" "}
             <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" className="text-foreground underline">
               Google AI Studio
             </a>{" "}

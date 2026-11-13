@@ -10,12 +10,12 @@ describe("Gemini request authentication", () => {
     expect(new URL(request.url).searchParams.has("key")).toBe(false);
   });
 
-  it("supports the AQ-key query fallback without duplicate credentials", () => {
-    const request = createGeminiRequest("AQ.Ab8RNexampleKey", { contents: [] }, "query");
+  it("never puts an API key in the request URL", () => {
+    const request = createGeminiRequest("AQ.Ab8RNexampleKey", { contents: [] });
     const headers = new Headers(request.init.headers);
 
-    expect(new URL(request.url).searchParams.get("key")).toBe("AQ.Ab8RNexampleKey");
-    expect(headers.has("x-goog-api-key")).toBe(false);
+    expect(new URL(request.url).searchParams.has("key")).toBe(false);
+    expect(headers.get("x-goog-api-key")).toBe("AQ.Ab8RNexampleKey");
   });
 
   it("keeps legacy keys in the API-key header", () => {

@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { createGeminiRequest, type GeminiAuthMode } from "./gemini-request";
+import { createGeminiRequest } from "./gemini-request";
 
 const Input = z.object({
   apiKey: z.string().max(200).optional(),
@@ -25,17 +25,8 @@ export const askCoach = createServerFn({ method: "POST" })
       systemInstruction: { parts: [{ text: `${SYSTEM}\n\nUser profile:\n${data.context}` }] },
       contents: data.messages.map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
     };
-    const isAuthorizationKey = key.startsWith("AQ.");
-    const authModes: GeminiAuthMode[] = isAuthorizationKey ? ["header", "query"] : ["header"];
-    let res: Response | undefined;
-
-    for (const authMode of authModes) {
-      const request = createGeminiRequest(key, payload, authMode);
-      res = await fetch(request.url, request.init);
-      if (res.ok || !isAuthorizationKey || res.status !== 401 && res.status !== 403) break;
-    }
-
-    if (!res) return { ok: false as const, error: "Smart Coach is unavailable right now. Try again shortly." };
+    const request = createGeminiRequest(key, payload);
+    const res = await fetch(request.url, request.init);
     if (!res.ok) {
       if (res.status === 429)
         return { ok: false as const, error: "Free daily limit reached. Wait a moment and try again." };
