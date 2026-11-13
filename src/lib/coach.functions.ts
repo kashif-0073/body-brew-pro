@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { createGeminiRequest } from "./gemini-request";
 
 const Input = z.object({
   apiKey: z.string().max(200).optional(),
@@ -17,25 +18,29 @@ For pain or medical issues, give general guidance and recommend seeing a profess
 export const askCoach = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data }) => {
-    const key = data.apiKey?.trim() || process.env['GEMINI_API_KEY'];
+    const key = data.apiKey?.trim() || process.env['GEMINI_API_KEY']?.trim();
     if (!key) return { ok: false as const, error: "Add your free Gemini key to start chatting." };
 
-    const res = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: `${SYSTEM}\n\nUser profile:\n${data.context}` }] },
-          contents: data.messages.map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
-        }),
-      },
-    );
+    const payload = {
+      systemInstruction: { parts: [{ text: `${SYSTEM}\n\nUser profile:\n${data.context}` }] },
+      contents: data.messages.map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
+    };
+    const request = createGeminiRequest(key, payload);
+    const res = await fetch(request.url, request.init);
     if (!res.ok) {
-      if (res.status === 400 || res.status === 403)
-        return { ok: false as const, error: "Your Gemini key was rejected. Check it and try again." };
       if (res.status === 429)
         return { ok: false as const, error: "Free daily limit reached. Wait a moment and try again." };
+      if (res.status === 400 || res.status === 401 || res.status === 403) {
+        const details = (await res.json().catch(() => null)) as {
+          error?: { message?: unknown };
+        } | null;
+        const message = typeof details?.error?.message === "string"
+          ? details.error.message.split(key).join("[hidden]").slice(0, 240)
+          : "Google rejected the key or its access to this model.";
+        return { ok: false as const, error: `Gemini connection failed (${res.status}): ${message}` };
+      }
+      if (res.status === 404)
+        return { ok: false as const, error: "The Gemini model is unavailable for this key or project." };
       return { ok: false as const, error: "Smart Coach is unavailable right now. Try again shortly." };
     }
     const json = (await res.json()) as {

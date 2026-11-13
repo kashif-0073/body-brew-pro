@@ -29,3 +29,4 @@
 
 ## Smart Coach
 - [x] New Smart Coach section (free Gemini chat, profile-aware)
+- [x] Support current AI Studio keys with secure header authentication, useful provider errors, and legacy-key compatibility
