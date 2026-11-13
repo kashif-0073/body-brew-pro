@@ -29,3 +29,4 @@
 
 ## Smart Coach
 - [x] New Smart Coach section (free Gemini chat, profile-aware)
+- [x] Support current AQ-format AI Studio keys and preserve legacy-key compatibility
